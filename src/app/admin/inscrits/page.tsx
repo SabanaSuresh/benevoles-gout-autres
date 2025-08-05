@@ -6,13 +6,13 @@ import { useUser } from "@/lib/userStore"
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
 
-  // ✅ Typage propre
+  // ✅ Typage corrigé
   type Inscription = {
     id: number
     users: {
       prenom: string
       nom: string
-    } | null
+    }[] // Supabase renvoie un tableau de users
   }
 
   type Event = {
@@ -75,13 +75,16 @@ export default function ListeInscritsPage() {
             <p className="text-gray-500 italic">Aucun inscrit</p>
           ) : (
             <ul className="list-disc list-inside text-sm text-gray-800">
-              {event.inscriptions?.map((inscription) => (
-                <li key={inscription.id}>
-                  {inscription.users
-                    ? `${inscription.users.prenom} ${inscription.users.nom}`
-                    : "Utilisateur inconnu"}
-                </li>
-              ))}
+              {event.inscriptions?.map((inscription) => {
+                const user = inscription.users[0] // 👈 on prend le 1er utilisateur du tableau
+                return (
+                  <li key={inscription.id}>
+                    {user
+                      ? `${user.prenom} ${user.nom}`
+                      : "Utilisateur inconnu"}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
