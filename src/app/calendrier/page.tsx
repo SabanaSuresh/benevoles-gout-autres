@@ -3,7 +3,9 @@ import { useEffect, useState } from "react"
 import Calendar from "react-calendar"
 import "react-calendar/dist/Calendar.css"
 import { supabase } from "@/lib/supabase"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useUser } from "@/lib/userStore"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useRouter } from "next/navigation"
 
 type Event = {
@@ -13,10 +15,8 @@ type Event = {
 }
 
 export default function CalendrierPage() {
-  const { user, loading } = useUser()
   const [events, setEvents] = useState<Event[]>([])
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
     const fetchEvents = async () => {
