@@ -35,7 +35,8 @@ export default function MesInscriptionsPage() {
         return
       }
 
-      const eventsOnly = data.map((inscription) => inscription.events)
+      // ✅ Corrigé : aplatir les résultats si nécessaire
+      const eventsOnly = data.map((inscription) => inscription.events).flat()
       setEvents(eventsOnly)
       setLoading(false)
     }
