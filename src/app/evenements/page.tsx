@@ -94,8 +94,8 @@ export default function EvenementsPage() {
       <div className="space-y-4">
         {events.map((event) => {
           const inscriptionsCount = event.inscriptions?.length || 0
-          const isLimiteActive = event.nb_places && event.nb_places > 0
-          const isComplet = isLimiteActive && inscriptionsCount >= event.nb_places
+          const isLimiteActive = event.nb_places !== null && event.nb_places > 0
+          const isComplet = isLimiteActive && inscriptionsCount >= (event.nb_places ?? 0)
           const dejaInscrit = event.inscriptions?.some((i) => i.users?.email === user?.email)
 
           return (
@@ -112,7 +112,7 @@ export default function EvenementsPage() {
               <p className="mt-2 text-gray-800">{event.description}</p>
               <p className="mt-1 text-sm font-medium">
                 {isLimiteActive
-                  ? `${event.nb_places - inscriptionsCount} place(s) restante(s) sur ${event.nb_places}`
+                  ? `${(event.nb_places ?? 0) - inscriptionsCount} place(s) restante(s) sur ${event.nb_places}`
                   : "Places illimitées"}
               </p>
               {event.urgence && (
@@ -170,7 +170,6 @@ export default function EvenementsPage() {
                     Annuler
                   </button>
 
-                  {/* ✅ BOUTON MODIFIER CORRIGÉ */}
                   <a
                     href={`/admin/modifier/${event.id}`}
                     className="appearance-none inline-block bg-[#3e878e] hover:bg-[#2e6e70] text-white no-underline font-semibold px-5 py-2 rounded-xl transition duration-200"
