@@ -5,21 +5,24 @@ import { useUser } from "@/lib/userStore"
 
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
+
+  // ✅ Typage propre
+  type Inscription = {
+    id: number
+    users: {
+      prenom: string
+      nom: string
+    } | null
+  }
+
   type Event = {
     id: number
     titre: string
     date: string
-    heure_debut: string
-    heure_fin: string
-    description: string
-    nb_places: number | null
-    urgence: boolean
-    annule: boolean
-    inscriptions?: any[] // ou à affiner si tu veux
+    inscriptions?: Inscription[]
   }
 
   const [events, setEvents] = useState<Event[]>([])
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,11 +71,11 @@ export default function ListeInscritsPage() {
           <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
           <p className="text-sm text-gray-600 mb-2">{event.date}</p>
 
-          {event.inscriptions.length === 0 ? (
+          {event.inscriptions && event.inscriptions.length === 0 ? (
             <p className="text-gray-500 italic">Aucun inscrit</p>
           ) : (
             <ul className="list-disc list-inside text-sm text-gray-800">
-              {event.inscriptions.map((inscription) => (
+              {event.inscriptions?.map((inscription) => (
                 <li key={inscription.id}>
                   {inscription.users
                     ? `${inscription.users.prenom} ${inscription.users.nom}`
