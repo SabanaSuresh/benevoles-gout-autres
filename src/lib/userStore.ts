@@ -35,8 +35,8 @@ export function useUser() {
         .eq('id', userId)
         .maybeSingle()
 
-      if (error) {
-        console.error('Erreur récupération utilisateur :', error.message)
+      if (error || !data) {
+        console.error('Erreur récupération utilisateur :', error?.message || 'Utilisateur introuvable')
         setUser(null)
       } else {
         setUser({
