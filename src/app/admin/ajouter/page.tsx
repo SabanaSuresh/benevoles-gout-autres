@@ -25,7 +25,10 @@ export default function AjouterEvenementPage() {
 
     if (name === "nb_places") {
       const parsed = value === "" ? null : parseInt(value)
-      setForm((prev) => ({ ...prev, [name]: isNaN(parsed) ? null : parsed }))
+      setForm((prev) => ({
+        ...prev,
+        [name]: isNaN(parsed as number) ? null : parsed,
+      }))
     } else {
       setForm((prev) => ({
         ...prev,
