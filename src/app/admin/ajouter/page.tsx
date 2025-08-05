@@ -64,7 +64,7 @@ export default function AjouterEvenementPage() {
 
   if (loading) return <div className="p-4">Chargement...</div>
   if (!user || user.role !== "admin") {
-    return <div className="p-4 text-red-600 font-semibold">Accès réservé à l'admin</div>
+    return <div className="p-4 text-red-600 font-semibold">Accès réservé à l&apos;admin</div>
   }
 
   return (

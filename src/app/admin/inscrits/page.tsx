@@ -5,7 +5,21 @@ import { useUser } from "@/lib/userStore"
 
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
-  const [events, setEvents] = useState<any[]>([])
+  type Event = {
+    id: number
+    titre: string
+    date: string
+    heure_debut: string
+    heure_fin: string
+    description: string
+    nb_places: number | null
+    urgence: boolean
+    annule: boolean
+    inscriptions?: any[] // ou à affiner si tu veux
+  }
+
+  const [events, setEvents] = useState<Event[]>([])
+
 
   useEffect(() => {
     const fetchData = async () => {
