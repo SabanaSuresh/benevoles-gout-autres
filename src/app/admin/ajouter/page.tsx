@@ -18,8 +18,10 @@ export default function AjouterEvenementPage() {
     urgence: false,
   })
 
+  // ✅ Correction ici
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target
+    const target = e.target as HTMLInputElement
+    const { name, value, type } = target
 
     if (name === "nb_places") {
       const parsed = value === "" ? null : parseInt(value)
@@ -27,7 +29,7 @@ export default function AjouterEvenementPage() {
     } else {
       setForm((prev) => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value,
+        [name]: type === "checkbox" ? target.checked : value,
       }))
     }
   }
