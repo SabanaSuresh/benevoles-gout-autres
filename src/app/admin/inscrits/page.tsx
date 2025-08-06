@@ -6,12 +6,14 @@ import { useUser } from "@/lib/userStore"
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
 
+  type User = {
+    prenom: string | null
+    nom: string | null
+  }
+
   type Inscription = {
     id: number
-    users: {
-      prenom: string | null
-      nom: string | null
-    } | null
+    users: User | null
   }
 
   type Event = {
@@ -44,7 +46,7 @@ export default function ListeInscritsPage() {
       if (error) {
         console.error("Erreur chargement :", error.message)
       } else {
-        setEvents((data || []) as Event[])
+        setEvents(data || [])
       }
     }
 
@@ -72,17 +74,16 @@ export default function ListeInscritsPage() {
 
           {event.inscriptions && event.inscriptions.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-800">
-              {event.inscriptions.map((inscription) =>
-                inscription.users?.prenom && inscription.users?.nom ? (
+              {event.inscriptions.map((inscription) => {
+                const u = inscription.users
+                return (
                   <li key={inscription.id}>
-                    {inscription.users.prenom} {inscription.users.nom}
-                  </li>
-                ) : (
-                  <li key={inscription.id} className="text-gray-400 italic">
-                    Utilisateur inconnu
+                    {u?.prenom && u?.nom
+                      ? `${u.prenom} ${u.nom}`
+                      : "Utilisateur inconnu"}
                   </li>
                 )
-              )}
+              })}
             </ul>
           ) : (
             <p className="text-gray-500 italic">Aucun inscrit</p>
