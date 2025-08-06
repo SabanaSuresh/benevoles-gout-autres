@@ -3,27 +3,27 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { useUser } from "@/lib/userStore"
 
+type User = {
+  prenom: string
+  nom: string
+}
+
+type Inscription = {
+  id: number
+  users: User | null
+}
+
+type Event = {
+  id: number
+  titre: string
+  date: string
+  inscriptions: Inscription[]
+}
+
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
-
-  type User = {
-    prenom: string | null
-    nom: string | null
-  }
-
-  type Inscription = {
-    id: number
-    users: User | null
-  }
-
-  type Event = {
-    id: number
-    titre: string
-    date: string
-    inscriptions: Inscription[] | null
-  }
-
   const [events, setEvents] = useState<Event[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,12 +48,14 @@ export default function ListeInscritsPage() {
       } else {
         setEvents(data || [])
       }
+      setLoadingEvents(false)
     }
 
     fetchData()
   }, [])
 
-  if (loading) return <div className="p-4">Chargement...</div>
+  if (loading || loadingEvents) return <div className="p-4">Chargement...</div>
+
   if (!user || user.role !== "admin") {
     return <div className="p-4 text-red-600 font-semibold">Accès interdit</div>
   }
@@ -72,7 +74,7 @@ export default function ListeInscritsPage() {
           <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
           <p className="text-sm text-gray-600 mb-2">{event.date}</p>
 
-          {event.inscriptions && event.inscriptions.length > 0 ? (
+          {event.inscriptions.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-800">
               {event.inscriptions.map((inscription) => {
                 const u = inscription.users
