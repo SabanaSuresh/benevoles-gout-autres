@@ -32,49 +32,37 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-2 shadow">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Logo */}
-        <div className="flex-shrink-0">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+        {/* Logo + Connecté */}
+        <div className="flex flex-col items-start">
           <img src="/logo1.png" alt="Logo" className="h-12 w-auto" />
-        </div>
-
-        {/* Nom utilisateur (au-dessus sur mobile) */}
-        <div className="text-sm text-black md:hidden">
-          Connecté : <strong>{user.prenom} {user.nom}</strong>
-        </div>
-
-        {/* Liens navigation */}
-        <div className="flex flex-wrap justify-center gap-2">
-          <NavItem href="/evenements" label="Événements" />
-          <NavItem href="/calendrier" label="Calendrier" />
-          {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
-          {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
-          {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
-          <NavItem
-            href="/notifications"
-            label={
-              <span className="relative">
-                Notifications
-                {nbNotifs > 0 && (
-                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {nbNotifs}
-                  </span>
-                )}
-              </span>
-            }
-          />
-        </div>
-
-        {/* Nom + bouton déconnexion (sur desktop uniquement) */}
-        <div className="hidden md:flex items-center gap-4 text-sm text-black">
-          <span>
+          <span className="text-sm text-black mt-1">
             Connecté : <strong>{user.prenom} {user.nom}</strong>
           </span>
-          <LogoutButton />
         </div>
 
-        {/* Déconnexion sur mobile */}
-        <div className="md:hidden mt-2">
+        {/* Liens + Déconnexion */}
+        <div className="flex flex-col md:flex-row items-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
+            <NavItem href="/evenements" label="Événements" />
+            <NavItem href="/calendrier" label="Calendrier" />
+            {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
+            {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
+            {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
+            <NavItem
+              href="/notifications"
+              label={
+                <span className="relative">
+                  Notifications
+                  {nbNotifs > 0 && (
+                    <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {nbNotifs}
+                    </span>
+                  )}
+                </span>
+              }
+            />
+          </div>
           <LogoutButton />
         </div>
       </div>
