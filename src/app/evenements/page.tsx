@@ -39,7 +39,10 @@ export default function EvenementsPage() {
     const fetchEvents = async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("*, inscriptions(*, users(*))")
+        .select(`
+          *,
+          inscriptions:inscriptions(*, users:user_id(id, prenom, nom))
+        `)
         .order("date", { ascending: true })
 
       if (error) {
@@ -47,7 +50,6 @@ export default function EvenementsPage() {
       } else {
         setEvents(data || [])
       }
-
       setLoadingEvents(false)
     }
 
