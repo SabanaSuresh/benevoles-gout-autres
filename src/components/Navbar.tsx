@@ -1,4 +1,5 @@
 "use client"
+
 import Link from "next/link"
 import { useUser } from "@/lib/userStore"
 import LogoutButton from "./LogoutButton"
@@ -9,7 +10,7 @@ import { Menu, X } from "lucide-react"
 export default function Navbar() {
   const { user, loading } = useUser()
   const [nbNotifs, setNbNotifs] = useState(0)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const fetchNotificationsCount = async () => {
     if (!user) return
@@ -33,18 +34,27 @@ export default function Navbar() {
   if (loading || !user) return null
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow px-6 py-4">
-      <div className="flex justify-between items-center">
-        {/* Logo toujours visible */}
-        <img src="/logo1.png" alt="Logo" className="h-10 w-auto" />
-
-        {/* Bouton menu mobile */}
-        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2">
-          {menuOpen ? <X size={28} /> : <Menu size={28} />}
+    <nav className="border-b border-gray-200 shadow bg-white">
+      {/* Logo et bouton menu */}
+      <div className="flex items-center justify-between px-4 py-2">
+        <div>
+          <img src="/logo1.png" alt="Logo" className="h-12 w-auto" />
+        </div>
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="p-2 border rounded"
+        >
+          {isMenuOpen ? <X /> : <Menu />}
         </button>
+      </div>
 
-        {/* Menu desktop */}
-        <div className="hidden md:flex items-center space-x-4">
+      {/* Menu déroulant */}
+      {isMenuOpen && (
+        <div className="flex flex-col items-center space-y-3 pb-6">
+          <span className="text-lg">
+            Connecté : <strong>{user.prenom} {user.nom}</strong>
+          </span>
+
           <NavItem href="/evenements" label="Événements" />
           <NavItem href="/calendrier" label="Calendrier" />
           {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
@@ -63,32 +73,8 @@ export default function Navbar() {
               </span>
             }
           />
-          <span className="text-sm text-black">
-            Connecté : <strong>{user.prenom} {user.nom}</strong>
-          </span>
-          <LogoutButton />
-        </div>
-      </div>
 
-      {/* Menu mobile déroulant sauf le logo */}
-      {menuOpen && (
-        <div className="md:hidden mt-6 flex flex-col items-center text-center space-y-3">
-          {/* Connecté */}
-          <p className="text-black text-sm">
-            Connecté : <strong>{user.prenom} {user.nom}</strong>
-          </p>
-
-          {/* Navigation mobile */}
-          <div className="flex flex-col items-center space-y-2 w-full">
-            <NavItemMobile href="/evenements" label="Événements" />
-            <NavItemMobile href="/calendrier" label="Calendrier" />
-            {user.role === "admin" && <NavItemMobile href="/admin/ajouter" label="Ajouter événement" />}
-            {user.role === "admin" && <NavItemMobile href="/admin/inscrits" label="Voir les inscrits" />}
-            {user.role === "benevole" && <NavItemMobile href="/mes-inscriptions" label="Mes inscriptions" />}
-            <NavItemMobile href="/notifications" label="Notifications" />
-          </div>
-
-          <div className="mt-4">
+          <div className="text-center">
             <LogoutButton />
           </div>
         </div>
@@ -97,22 +83,12 @@ export default function Navbar() {
   )
 }
 
+// ✅ Composant NavItem stylé
 function NavItem({ href, label }: { href: string; label: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="min-w-[160px] text-center px-6 py-2 rounded-lg bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
-    >
-      {label}
-    </Link>
-  )
-}
-
-function NavItemMobile({ href, label }: { href: string; label: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="w-full px-4 py-3 text-center bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
+      className="w-full max-w-xs text-center px-6 py-3 rounded bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
     >
       {label}
     </Link>
