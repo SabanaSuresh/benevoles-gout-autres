@@ -30,14 +30,16 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        {/* ✅ Ajout des liens pour PWA */}
+        {/* ✅ PWA support */}
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="theme-color" content="#3e878e" />
+        <link rel="icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body
-        className={`${lato.variable} ${glassAntiqua.variable} antialiased`}
-      >
+      <body className={`${lato.variable} ${glassAntiqua.variable} antialiased`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

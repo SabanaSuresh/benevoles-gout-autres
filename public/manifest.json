@@ -5,6 +5,8 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3e878e",
+  "description": "Application pour les bénévoles du tiers-lieu Le Goût des Autres.",
+  "id": "/",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -15,6 +17,14 @@
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }

@@ -20,8 +20,16 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "baseUrl": ".",                     // ✅ ajouté pour les chemins
+    "typeRoots": ["types", "./node_modules/@types"] // ✅ ajouté pour charger next-pwa.d.ts
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"                   // ✅ inclus le dossier types
+  ],
   "exclude": ["node_modules"]
 }
