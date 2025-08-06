@@ -81,14 +81,14 @@ export default function Navbar() {
             Connecté : <strong>{user.prenom} {user.nom}</strong>
           </p>
 
-          {/* Lien de navigation */}
-          <div className="flex flex-col items-center space-y-2 w-full">
-            <NavItem href="/evenements" label="Événements" />
-            <NavItem href="/calendrier" label="Calendrier" />
-            {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
-            {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
-            {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
-            <NavItem href="/notifications" label="Notifications" />
+          {/* Lien de navigation largeur complète */}
+          <div className="flex flex-col items-center space-y-2 w-full px-6">
+            <NavItemMobile href="/evenements" label="Événements" />
+            <NavItemMobile href="/calendrier" label="Calendrier" />
+            {user.role === "admin" && <NavItemMobile href="/admin/ajouter" label="Ajouter événement" />}
+            {user.role === "admin" && <NavItemMobile href="/admin/inscrits" label="Voir les inscrits" />}
+            {user.role === "benevole" && <NavItemMobile href="/mes-inscriptions" label="Mes inscriptions" />}
+            <NavItemMobile href="/notifications" label="Notifications" />
           </div>
 
           {/* Déconnexion centrée */}
@@ -101,11 +101,24 @@ export default function Navbar() {
   )
 }
 
+// ✅ Desktop link
 function NavItem({ href, label }: { href: string; label: React.ReactNode }) {
   return (
     <Link
       href={href}
       className="min-w-[160px] text-center px-6 py-2 rounded-lg bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
+    >
+      {label}
+    </Link>
+  )
+}
+
+// ✅ Mobile full-width link
+function NavItemMobile({ href, label }: { href: string; label: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="w-full block text-center px-6 py-2 rounded-lg bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
     >
       {label}
     </Link>
