@@ -6,7 +6,6 @@ import { useUser } from "@/lib/userStore"
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
 
-  // ✅ Typage corrigé : user unique
   type Inscription = {
     id: number
     users: {
@@ -19,7 +18,7 @@ export default function ListeInscritsPage() {
     id: number
     titre: string
     date: string
-    inscriptions?: Inscription[] | null
+    inscriptions: Inscription[] | null
   }
 
   const [events, setEvents] = useState<Event[]>([])
@@ -45,7 +44,7 @@ export default function ListeInscritsPage() {
       if (error) {
         console.error("Erreur chargement :", error.message)
       } else {
-        setEvents(data || [])
+        setEvents((data || []) as Event[])
       }
     }
 
