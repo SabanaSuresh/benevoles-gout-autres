@@ -35,15 +35,15 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200 shadow px-6 py-4">
       <div className="flex justify-between items-center">
-        {/* Logo */}
-        <img src="/logo1.png" alt="Logo" className="h-10 w-auto md:block hidden" />
+        {/* Logo toujours visible */}
+        <img src="/logo1.png" alt="Logo" className="h-10 w-auto" />
 
-        {/* Mobile menu toggle */}
-        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 ml-auto">
+        {/* Bouton menu mobile */}
+        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2">
           {menuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
 
-        {/* Desktop menu */}
+        {/* Menu desktop */}
         <div className="hidden md:flex items-center space-x-4">
           <NavItem href="/evenements" label="Événements" />
           <NavItem href="/calendrier" label="Calendrier" />
@@ -70,19 +70,16 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Menu mobile déroulant sauf le logo */}
       {menuOpen && (
         <div className="md:hidden mt-6 flex flex-col items-center text-center space-y-3">
-          {/* Logo centré */}
-          <img src="/logo1.png" alt="Logo" className="h-20 w-auto" />
-
-          {/* Nom connecté centré */}
+          {/* Connecté */}
           <p className="text-black text-sm">
             Connecté : <strong>{user.prenom} {user.nom}</strong>
           </p>
 
-          {/* Lien de navigation largeur complète */}
-          <div className="flex flex-col items-center space-y-2 w-full px-6">
+          {/* Navigation mobile */}
+          <div className="flex flex-col items-center space-y-2 w-full">
             <NavItemMobile href="/evenements" label="Événements" />
             <NavItemMobile href="/calendrier" label="Calendrier" />
             {user.role === "admin" && <NavItemMobile href="/admin/ajouter" label="Ajouter événement" />}
@@ -91,7 +88,6 @@ export default function Navbar() {
             <NavItemMobile href="/notifications" label="Notifications" />
           </div>
 
-          {/* Déconnexion centrée */}
           <div className="mt-4">
             <LogoutButton />
           </div>
@@ -101,7 +97,6 @@ export default function Navbar() {
   )
 }
 
-// ✅ Desktop link
 function NavItem({ href, label }: { href: string; label: React.ReactNode }) {
   return (
     <Link
@@ -113,12 +108,11 @@ function NavItem({ href, label }: { href: string; label: React.ReactNode }) {
   )
 }
 
-// ✅ Mobile full-width link
 function NavItemMobile({ href, label }: { href: string; label: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="w-full block text-center px-6 py-2 rounded-lg bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
+      className="w-full px-4 py-3 text-center bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
     >
       {label}
     </Link>
