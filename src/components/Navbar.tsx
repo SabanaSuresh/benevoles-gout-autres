@@ -32,15 +32,19 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-2 shadow">
-      {/* Conteneur principal : passe en colonne sur mobile */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-2">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex-shrink-0">
           <img src="/logo1.png" alt="Logo" className="h-12 w-auto" />
         </div>
 
+        {/* Nom utilisateur (au-dessus sur mobile) */}
+        <div className="text-sm text-black md:hidden">
+          Connecté : <strong>{user.prenom} {user.nom}</strong>
+        </div>
+
         {/* Liens navigation */}
-        <div className="flex flex-wrap justify-center gap-2 mt-2 md:mt-0">
+        <div className="flex flex-wrap justify-center gap-2">
           <NavItem href="/evenements" label="Événements" />
           <NavItem href="/calendrier" label="Calendrier" />
           {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
@@ -61,11 +65,16 @@ export default function Navbar() {
           />
         </div>
 
-        {/* Nom + bouton déconnexion */}
-        <div className="flex items-center gap-4 mt-2 md:mt-0 text-sm text-black">
+        {/* Nom + bouton déconnexion (sur desktop uniquement) */}
+        <div className="hidden md:flex items-center gap-4 text-sm text-black">
           <span>
             Connecté : <strong>{user.prenom} {user.nom}</strong>
           </span>
+          <LogoutButton />
+        </div>
+
+        {/* Déconnexion sur mobile */}
+        <div className="md:hidden mt-2">
           <LogoutButton />
         </div>
       </div>
