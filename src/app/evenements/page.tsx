@@ -47,6 +47,7 @@ export default function EvenementsPage() {
       } else {
         setEvents(data || [])
       }
+
       setLoadingEvents(false)
     }
 
@@ -56,7 +57,6 @@ export default function EvenementsPage() {
   const handleInscription = async (eventId: string) => {
     if (!user) return
 
-    // Vérifier si l'utilisateur est déjà inscrit
     const { data: existingInscription, error: checkError } = await supabase
       .from("inscriptions")
       .select("*")
@@ -105,7 +105,6 @@ export default function EvenementsPage() {
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">Événements à venir</h1>
-
       {user && (
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm">
@@ -113,7 +112,6 @@ export default function EvenementsPage() {
           </p>
         </div>
       )}
-
       <div className="space-y-4">
         {events.map((event) => {
           const inscriptionsCount = event.inscriptions?.length || 0
@@ -138,14 +136,9 @@ export default function EvenementsPage() {
                   ? `${(event.nb_places ?? 0) - inscriptionsCount} place(s) restante(s) sur ${event.nb_places}`
                   : "Places illimitées"}
               </p>
-              {event.urgence && (
-                <p className="text-[#f1887c] font-bold mt-1">🚨 Urgence</p>
-              )}
-              {event.annule && (
-                <p className="text-red-500 font-bold mt-1"> Événement annulé</p>
-              )}
+              {event.urgence && <p className="text-[#f1887c] font-bold mt-1">🚨 Urgence</p>}
+              {event.annule && <p className="text-red-500 font-bold mt-1"> Événement annulé</p>}
 
-              {/* BOUTONS BÉNÉVOLE */}
               {user?.role === "benevole" && !event.annule && (
                 <div className="mt-3">
                   {dejaInscrit ? (
@@ -168,19 +161,16 @@ export default function EvenementsPage() {
                 </div>
               )}
 
-              {/* ACTIONS ADMIN */}
               {user?.role === "admin" && !event.annule && (
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={async () => {
                       const confirm = window.confirm("Confirmer l'annulation de cet événement ?")
                       if (!confirm) return
-
                       const { error } = await supabase
                         .from("events")
                         .update({ annule: true })
                         .eq("id", event.id)
-
                       if (error) {
                         alert("Erreur : " + error.message)
                       } else {
@@ -192,7 +182,6 @@ export default function EvenementsPage() {
                   >
                     Annuler
                   </button>
-
                   <a
                     href={`/admin/modifier/${event.id}`}
                     className="appearance-none inline-block bg-[#3e878e] hover:bg-[#2e6e70] text-white no-underline font-semibold px-5 py-2 rounded-xl transition duration-200"
@@ -203,7 +192,6 @@ export default function EvenementsPage() {
                 </div>
               )}
 
-              {/* LISTE DES INSCRITS */}
               {event.inscriptions && event.inscriptions.length > 0 && (
                 <div className="mt-4 text-sm">
                   <p className="font-semibold mb-1">Bénévoles inscrits :</p>
