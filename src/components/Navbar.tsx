@@ -31,15 +31,15 @@ export default function Navbar() {
   if (loading || !user) return null
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-4 shadow flex items-center justify-between">
+    <nav className="bg-white border-b border-gray-200 px-4 py-3 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3">
       
-      {/* Logo à gauche */}
-      <div className="flex items-center">
+      {/* Logo en haut à gauche ou à gauche sur desktop */}
+      <div className="flex items-center justify-between md:justify-start">
         <img src="/logo1.png" alt="Logo" className="h-10 w-auto" />
       </div>
 
-      {/* Liens de navigation au centre */}
-      <div className="flex items-center space-x-4">
+      {/* Liens de navigation : scroll horizontal si trop large */}
+      <div className="flex overflow-x-auto gap-2 py-1 px-1">
         <NavItem href="/evenements" label="Événements" />
         <NavItem href="/calendrier" label="Calendrier" />
         {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
@@ -60,8 +60,8 @@ export default function Navbar() {
         />
       </div>
 
-      {/* Partie droite : nom + bouton déconnexion avec ESPACE REEL */}
-      <div className="flex items-center gap-4 text-sm text-black">
+      {/* Infos utilisateur + logout */}
+      <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm text-black">
         <span>
           Connecté : <strong>{user.prenom} {user.nom}</strong>
         </span>
@@ -71,12 +71,11 @@ export default function Navbar() {
   )
 }
 
-// ✅ Composant NavItem stylé
 function NavItem({ href, label }: { href: string; label: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="min-w-[160px] text-center px-6 py-3 rounded-lg bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300"
+      className="whitespace-nowrap text-center px-4 py-2 rounded-lg bg-[#aad7d4] hover:bg-[#3e878e] text-black font-semibold shadow border border-gray-300 min-w-[140px] text-sm"
     >
       {label}
     </Link>
