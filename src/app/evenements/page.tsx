@@ -39,10 +39,7 @@ export default function EvenementsPage() {
     const fetchEvents = async () => {
       const { data, error } = await supabase
         .from("events")
-        .select(`
-          *,
-          inscriptions:inscriptions(*, users:user_id(id, prenom, nom))
-        `)
+        .select("*, inscriptions(id, user_id, users(id, email, nom, prenom))")
         .order("date", { ascending: true })
 
       if (error) {
@@ -58,19 +55,8 @@ export default function EvenementsPage() {
 
   const handleInscription = async (eventId: string) => {
     if (!user) return
-
-    const { data: existingInscription, error: checkError } = await supabase
-      .from("inscriptions")
-      .select("*")
-      .eq("event_id", eventId)
-      .eq("user_id", user.id)
-
-    if (checkError) {
-      alert("Erreur lors de la vérification de l'inscription : " + checkError.message)
-      return
-    }
-
-    if (existingInscription && existingInscription.length > 0) {
+    const dejaInscrit = events.find(e => e.id === eventId)?.inscriptions.some(i => i.users?.id === user.id)
+    if (dejaInscrit) {
       alert("Vous êtes déjà inscrit à cet événement.")
       return
     }
@@ -80,7 +66,7 @@ export default function EvenementsPage() {
       .insert({ event_id: eventId, user_id: user.id })
 
     if (error) {
-      alert("Erreur lors de l'inscription : " + error.message)
+      alert("Erreur : " + error.message)
     } else {
       alert("Inscription confirmée.")
       router.refresh()
@@ -95,7 +81,7 @@ export default function EvenementsPage() {
       .eq("user_id", user?.id)
 
     if (error) {
-      alert("Erreur lors de la désinscription : " + error.message)
+      alert("Erreur : " + error.message)
     } else {
       alert("Désinscription confirmée.")
       router.refresh()
@@ -107,13 +93,7 @@ export default function EvenementsPage() {
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">Événements à venir</h1>
-      {user && (
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm">
-            Connecté en tant que : <strong>{user.prenom} {user.nom}</strong> ({user.role})
-          </p>
-        </div>
-      )}
+
       <div className="space-y-4">
         {events.map((event) => {
           const inscriptionsCount = event.inscriptions?.length || 0
@@ -138,8 +118,12 @@ export default function EvenementsPage() {
                   ? `${(event.nb_places ?? 0) - inscriptionsCount} place(s) restante(s) sur ${event.nb_places}`
                   : "Places illimitées"}
               </p>
-              {event.urgence && <p className="text-[#f1887c] font-bold mt-1">🚨 Urgence</p>}
-              {event.annule && <p className="text-red-500 font-bold mt-1"> Événement annulé</p>}
+              {event.urgence && (
+                <p className="text-[#f1887c] font-bold mt-1">🚨 Urgence</p>
+              )}
+              {event.annule && (
+                <p className="text-red-500 font-bold mt-1"> Événement annulé</p>
+              )}
 
               {user?.role === "benevole" && !event.annule && (
                 <div className="mt-3">
@@ -157,40 +141,9 @@ export default function EvenementsPage() {
                       onClick={() => handleInscription(event.id)}
                       className="bg-[#3e878e] hover:bg-[#aad7d4] text-white font-semibold px-5 py-2 rounded-xl"
                     >
-                      Je m'inscris
+                      Je m’inscris
                     </button>
                   )}
-                </div>
-              )}
-
-              {user?.role === "admin" && !event.annule && (
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={async () => {
-                      const confirm = window.confirm("Confirmer l'annulation de cet événement ?")
-                      if (!confirm) return
-                      const { error } = await supabase
-                        .from("events")
-                        .update({ annule: true })
-                        .eq("id", event.id)
-                      if (error) {
-                        alert("Erreur : " + error.message)
-                      } else {
-                        alert("Événement annulé.")
-                        router.refresh()
-                      }
-                    }}
-                    className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl"
-                  >
-                    Annuler
-                  </button>
-                  <a
-                    href={`/admin/modifier/${event.id}`}
-                    className="appearance-none inline-block bg-[#3e878e] hover:bg-[#2e6e70] text-white no-underline font-semibold px-5 py-2 rounded-xl transition duration-200"
-                    style={{ textDecoration: "none" }}
-                  >
-                    Modifier
-                  </a>
                 </div>
               )}
 
@@ -202,7 +155,7 @@ export default function EvenementsPage() {
                       <li key={inscription.id}>
                         {inscription.users
                           ? `${inscription.users.prenom} ${inscription.users.nom}`
-                          : "Utilisateur inconnu"}
+                          : "Anonyme"}
                       </li>
                     ))}
                   </ul>

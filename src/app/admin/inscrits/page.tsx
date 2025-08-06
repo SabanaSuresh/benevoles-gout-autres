@@ -13,12 +13,12 @@ export default function ListeInscritsPage() {
   }
 
   type Inscription = {
-    id: number
-    users: User | User[] | null
+    id: string
+    users: User | null
   }
 
   type Event = {
-    id: number
+    id: string
     titre: string
     date: string
     inscriptions: Inscription[] | null
@@ -60,30 +60,16 @@ export default function ListeInscritsPage() {
     return <div className="p-4 text-red-600 font-semibold">Accès interdit</div>
   }
 
-  const renderUsers = (users: User | User[] | null) => {
+  const renderUsers = (users: User | null) => {
     if (!users) {
       return <li className="text-gray-400 italic">Utilisateur inconnu</li>
     }
 
-    if (Array.isArray(users)) {
-      return users.map((u, i) =>
-        u?.prenom && u?.nom ? (
-          <li key={i}>
-            {u.prenom} {u.nom}
-          </li>
-        ) : (
-          <li key={i} className="text-gray-400 italic">
-            Utilisateur inconnu
-          </li>
-        )
-      )
-    } else {
-      return (
-        <li>
-          {users.prenom} {users.nom}
-        </li>
-      )
-    }
+    return (
+      <li>
+        {users.prenom} {users.nom}
+      </li>
+    )
   }
 
   return (

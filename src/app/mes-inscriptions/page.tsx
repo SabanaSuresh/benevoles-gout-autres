@@ -27,7 +27,7 @@ export default function MesInscriptionsPage() {
     const fetchInscriptions = async () => {
       const { data, error } = await supabase
         .from("inscriptions")
-        .select("events(*)")
+        .select("event_id, events(id, titre, date, heure_debut, heure_fin, description, urgence, annule)")
         .eq("user_id", user.id)
 
       if (error) {
@@ -35,11 +35,8 @@ export default function MesInscriptionsPage() {
         return
       }
 
-      if (data) {
-        const eventsData = data.map((inscription) => inscription.events)
-        setEvents(eventsData)
-      }
-
+      const eventsOnly = data.map((inscription) => inscription.events).flat()
+      setEvents(eventsOnly)
       setLoading(false)
     }
 
@@ -69,20 +66,32 @@ export default function MesInscriptionsPage() {
 
   return (
     <main className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-title mb-6 text-[#1e5363]">Mes inscriptions</h1>
+      <h1 className="text-3xl font-title mb-6 text-[#1e5363]">
+        Mes inscriptions
+      </h1>
+
       {events.length === 0 ? (
-        <p className="text-gray-600">Tu n'es inscrit à aucun événement pour le moment.</p>
+        <p className="text-gray-600">Tu n’es inscrit à aucun événement pour le moment.</p>
       ) : (
         <div className="space-y-4">
           {events.map((event) => (
-            <div key={event.id} className="border border-[#aad7d4] rounded-xl p-4 shadow bg-white">
+            <div
+              key={event.id}
+              className="border border-[#aad7d4] rounded-xl p-4 shadow bg-white"
+            >
               <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
               <p className="text-sm text-gray-600">
                 {event.date} — {event.heure_debut} à {event.heure_fin}
               </p>
               <p className="mt-2 text-gray-800">{event.description}</p>
-              {event.urgence && <p className="text-red-600 font-bold mt-2">🚨 Urgence</p>}
-              {event.annule && <p className="text-red-500 font-bold mt-2">❌ Événement annulé</p>}
+
+              {event.urgence && (
+                <p className="text-red-600 font-bold mt-2">🚨 Urgence</p>
+              )}
+              {event.annule && (
+                <p className="text-red-500 font-bold mt-2">❌ Événement annulé</p>
+              )}
+
               <button
                 onClick={() => handleDesinscription(event.id)}
                 className="mt-4 px-4 py-1 bg-[#f1887c] text-white rounded hover:bg-[#e06f6a]"
