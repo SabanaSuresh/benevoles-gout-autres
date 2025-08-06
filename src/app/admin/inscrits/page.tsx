@@ -14,7 +14,7 @@ export default function ListeInscritsPage() {
 
   type Inscription = {
     id: number
-    users: User[] | User | null
+    users: User | User[] | null
   }
 
   type Event = {
@@ -60,6 +60,32 @@ export default function ListeInscritsPage() {
     return <div className="p-4 text-red-600 font-semibold">Accès interdit</div>
   }
 
+  const renderUsers = (users: User | User[] | null) => {
+    if (!users) {
+      return <li className="text-gray-400 italic">Utilisateur inconnu</li>
+    }
+
+    if (Array.isArray(users)) {
+      return users.map((u, i) =>
+        u?.prenom && u?.nom ? (
+          <li key={i}>
+            {u.prenom} {u.nom}
+          </li>
+        ) : (
+          <li key={i} className="text-gray-400 italic">
+            Utilisateur inconnu
+          </li>
+        )
+      )
+    } else {
+      return (
+        <li>
+          {users.prenom} {users.nom}
+        </li>
+      )
+    }
+  }
+
   return (
     <main className="p-4 max-w-3xl mx-auto">
       <h1 className="text-3xl font-title text-[#1e5363] font-bold mb-6">
@@ -76,23 +102,9 @@ export default function ListeInscritsPage() {
 
           {event.inscriptions && event.inscriptions.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-800">
-              {event.inscriptions.map((inscription) => {
-                const users = inscription.users || [];
-                if (!Array.isArray(users)) {
-                  return <li key={inscription.id}>{users.prenom} {users.nom}</li>;
-                }
-                return users.map((u, i) =>
-                  u?.prenom && u?.nom ? (
-                    <li key={`${inscription.id}-${i}`}>
-                      {u.prenom} {u.nom}
-                    </li>
-                  ) : (
-                    <li key={`${inscription.id}-${i}`} className="text-gray-400 italic">
-                      Utilisateur inconnu
-                    </li>
-                  )
-                );
-              })}
+              {event.inscriptions.map((inscription) => (
+                <>{renderUsers(inscription.users)}</>
+              ))}
             </ul>
           ) : (
             <p className="text-gray-500 italic">Aucun inscrit</p>
