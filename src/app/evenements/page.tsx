@@ -1,3 +1,4 @@
+
 "use client"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -60,6 +61,8 @@ export default function EvenementsPage() {
       alert("Tu es déjà inscrit à cet événement.")
       return
     }
+
+    console.log("DEBUG inscription", { eventId, userId: user.id }) // <- debug
 
     const { error } = await supabase
       .from("inscriptions")
@@ -130,7 +133,6 @@ export default function EvenementsPage() {
                 <p className="text-red-500 font-bold mt-1"> Événement annulé</p>
               )}
 
-              {/* Boutons bénévole */}
               {user?.role === "benevole" && !event.annule && (
                 <div className="mt-3">
                   {dejaInscrit ? (
@@ -149,7 +151,6 @@ export default function EvenementsPage() {
                 </div>
               )}
 
-              {/* Liste des inscrits */}
               {event.inscriptions && event.inscriptions.length > 0 && (
                 <div className="mt-4 text-sm">
                   <p className="font-semibold mb-1">Bénévoles inscrits :</p>
