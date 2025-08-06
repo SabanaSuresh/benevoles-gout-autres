@@ -14,7 +14,7 @@ export default function ListeInscritsPage() {
 
   type Inscription = {
     id: number
-    users: User | null
+    users: User[] | User | null
   }
 
   type Event = {
@@ -76,13 +76,23 @@ export default function ListeInscritsPage() {
 
           {event.inscriptions && event.inscriptions.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-800">
-              {event.inscriptions.map((inscription) => (
-                <li key={inscription.id}>
-                  {inscription.users
-                    ? `${inscription.users.prenom} ${inscription.users.nom}`
-                    : "Utilisateur inconnu"}
-                </li>
-              ))}
+              {event.inscriptions.map((inscription) => {
+                const users = inscription.users || [];
+                if (!Array.isArray(users)) {
+                  return <li key={inscription.id}>{users.prenom} {users.nom}</li>;
+                }
+                return users.map((u, i) =>
+                  u?.prenom && u?.nom ? (
+                    <li key={`${inscription.id}-${i}`}>
+                      {u.prenom} {u.nom}
+                    </li>
+                  ) : (
+                    <li key={`${inscription.id}-${i}`} className="text-gray-400 italic">
+                      Utilisateur inconnu
+                    </li>
+                  )
+                );
+              })}
             </ul>
           ) : (
             <p className="text-gray-500 italic">Aucun inscrit</p>
