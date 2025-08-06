@@ -1,4 +1,3 @@
-
 "use client"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -40,10 +39,14 @@ export default function EvenementsPage() {
     const fetchEvents = async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("*, inscriptions(id, users(id, email, nom, prenom))")
+        .select("*, inscriptions(*, users(*))")
         .order("date", { ascending: true })
 
-      if (!error && data) setEvents(data)
+      if (error) {
+        console.error("Erreur chargement events :", error)
+      } else {
+        setEvents(data || [])
+      }
       setLoadingEvents(false)
     }
 
@@ -53,23 +56,29 @@ export default function EvenementsPage() {
   const handleInscription = async (eventId: string) => {
     if (!user) return
 
-    const dejaInscrit = events
-      .find((e) => e.id === eventId)
-      ?.inscriptions?.some((i) => i.users?.id === user.id)
+    // Vérifier si l'utilisateur est déjà inscrit
+    const { data: existingInscription, error: checkError } = await supabase
+      .from("inscriptions")
+      .select("*")
+      .eq("event_id", eventId)
+      .eq("user_id", user.id)
 
-    if (dejaInscrit) {
-      alert("Tu es déjà inscrit à cet événement.")
+    if (checkError) {
+      alert("Erreur lors de la vérification de l'inscription : " + checkError.message)
       return
     }
 
-    console.log("DEBUG inscription", { eventId, userId: user.id }) // <- debug
+    if (existingInscription && existingInscription.length > 0) {
+      alert("Vous êtes déjà inscrit à cet événement.")
+      return
+    }
 
     const { error } = await supabase
       .from("inscriptions")
       .insert({ event_id: eventId, user_id: user.id })
 
     if (error) {
-      alert("Erreur : " + error.message)
+      alert("Erreur lors de l'inscription : " + error.message)
     } else {
       alert("Inscription confirmée.")
       router.refresh()
@@ -84,7 +93,7 @@ export default function EvenementsPage() {
       .eq("user_id", user?.id)
 
     if (error) {
-      alert("Erreur : " + error.message)
+      alert("Erreur lors de la désinscription : " + error.message)
     } else {
       alert("Désinscription confirmée.")
       router.refresh()
@@ -98,9 +107,11 @@ export default function EvenementsPage() {
       <h1 className="text-2xl font-bold mb-4">Événements à venir</h1>
 
       {user && (
-        <p className="text-sm mb-4">
-          Connecté : <strong>{user.prenom} {user.nom}</strong> ({user.role})
-        </p>
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm">
+            Connecté en tant que : <strong>{user.prenom} {user.nom}</strong> ({user.role})
+          </p>
+        </div>
       )}
 
       <div className="space-y-4">
@@ -111,8 +122,9 @@ export default function EvenementsPage() {
           const dejaInscrit = event.inscriptions?.some((i) => i.users?.id === user?.id)
 
           return (
-            <div key={event.id}
-              className={`border rounded-xl p-4 shadow ${
+            <div
+              key={event.id}
+              className={`border rounded-xl p-4 shadow transition ${
                 event.annule ? "opacity-50 line-through" : ""
               } ${event.urgence ? "border-[#f1887c] bg-[#fff5f5]" : "border-gray-300 bg-white"}`}
             >
@@ -133,33 +145,74 @@ export default function EvenementsPage() {
                 <p className="text-red-500 font-bold mt-1"> Événement annulé</p>
               )}
 
+              {/* BOUTONS BÉNÉVOLE */}
               {user?.role === "benevole" && !event.annule && (
                 <div className="mt-3">
                   {dejaInscrit ? (
-                    <button onClick={() => handleDesinscription(event.id)}
-                      className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl">
+                    <button
+                      onClick={() => handleDesinscription(event.id)}
+                      className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl"
+                    >
                       Me désinscrire
                     </button>
                   ) : isComplet ? (
                     <span className="text-red-600 font-semibold">Complet</span>
                   ) : (
-                    <button onClick={() => handleInscription(event.id)}
-                      className="bg-[#3e878e] hover:bg-[#aad7d4] text-white font-semibold px-5 py-2 rounded-xl">
-                      Je m’inscris
+                    <button
+                      onClick={() => handleInscription(event.id)}
+                      className="bg-[#3e878e] hover:bg-[#aad7d4] text-white font-semibold px-5 py-2 rounded-xl"
+                    >
+                      Je m'inscris
                     </button>
                   )}
                 </div>
               )}
 
+              {/* ACTIONS ADMIN */}
+              {user?.role === "admin" && !event.annule && (
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={async () => {
+                      const confirm = window.confirm("Confirmer l'annulation de cet événement ?")
+                      if (!confirm) return
+
+                      const { error } = await supabase
+                        .from("events")
+                        .update({ annule: true })
+                        .eq("id", event.id)
+
+                      if (error) {
+                        alert("Erreur : " + error.message)
+                      } else {
+                        alert("Événement annulé.")
+                        router.refresh()
+                      }
+                    }}
+                    className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl"
+                  >
+                    Annuler
+                  </button>
+
+                  <a
+                    href={`/admin/modifier/${event.id}`}
+                    className="appearance-none inline-block bg-[#3e878e] hover:bg-[#2e6e70] text-white no-underline font-semibold px-5 py-2 rounded-xl transition duration-200"
+                    style={{ textDecoration: "none" }}
+                  >
+                    Modifier
+                  </a>
+                </div>
+              )}
+
+              {/* LISTE DES INSCRITS */}
               {event.inscriptions && event.inscriptions.length > 0 && (
                 <div className="mt-4 text-sm">
                   <p className="font-semibold mb-1">Bénévoles inscrits :</p>
                   <ul className="list-disc list-inside">
-                    {event.inscriptions.map((i) => (
-                      <li key={i.id}>
-                        {i.users
-                          ? `${i.users.prenom} ${i.users.nom}`
-                          : "Anonyme"}
+                    {event.inscriptions.map((inscription) => (
+                      <li key={inscription.id}>
+                        {inscription.users
+                          ? `${inscription.users.prenom} ${inscription.users.nom}`
+                          : "Utilisateur inconnu"}
                       </li>
                     ))}
                   </ul>
