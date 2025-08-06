@@ -6,13 +6,13 @@ import { useUser } from "@/lib/userStore"
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
 
-  // ✅ Typage amélioré
+  // ✅ Typage corrigé : user unique
   type Inscription = {
     id: number
     users: {
       prenom: string | null
       nom: string | null
-    }[] | null
+    } | null
   }
 
   type Event = {
@@ -74,16 +74,14 @@ export default function ListeInscritsPage() {
           {event.inscriptions && event.inscriptions.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-800">
               {event.inscriptions.map((inscription) =>
-                (inscription.users || []).map((u, i) =>
-                  u?.prenom && u?.nom ? (
-                    <li key={`${inscription.id}-${i}`}>
-                      {u.prenom} {u.nom}
-                    </li>
-                  ) : (
-                    <li key={`${inscription.id}-${i}`} className="text-gray-400 italic">
-                      Utilisateur inconnu
-                    </li>
-                  )
+                inscription.users?.prenom && inscription.users?.nom ? (
+                  <li key={inscription.id}>
+                    {inscription.users.prenom} {inscription.users.nom}
+                  </li>
+                ) : (
+                  <li key={inscription.id} className="text-gray-400 italic">
+                    Utilisateur inconnu
+                  </li>
                 )
               )}
             </ul>
