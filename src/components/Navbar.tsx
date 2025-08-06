@@ -39,16 +39,8 @@ export default function Navbar() {
           <img src="/logo1.png" alt="Logo" className="h-12 w-auto" />
         </div>
 
-        {/* Nom + bouton déconnexion */}
-        <div className="flex items-center gap-4 mt-2 md:mt-0 text-sm text-black order-1 md:order-none">
-          <span>
-            Connecté : <strong>{user.prenom} {user.nom}</strong>
-          </span>
-          <LogoutButton />
-        </div>
-
         {/* Liens navigation */}
-        <div className="flex flex-wrap justify-center gap-2 mt-2 md:mt-0 order-2 md:order-none">
+        <div className="flex flex-wrap justify-center gap-2 mt-2 md:mt-0">
           <NavItem href="/evenements" label="Événements" />
           <NavItem href="/calendrier" label="Calendrier" />
           {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
@@ -67,6 +59,14 @@ export default function Navbar() {
               </span>
             }
           />
+        </div>
+
+        {/* Nom + bouton déconnexion */}
+        <div className="flex items-center gap-4 mt-2 md:mt-0 text-sm text-black">
+          <span>
+            Connecté : <strong>{user.prenom} {user.nom}</strong>
+          </span>
+          <LogoutButton />
         </div>
       </div>
     </nav>
