@@ -4,7 +4,7 @@ import { useUser } from "@/lib/userStore"
 import LogoutButton from "./LogoutButton"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { Menu } from "lucide-react"
+import { Menu, X } from "lucide-react"
 
 export default function Navbar() {
   const { user, loading } = useUser()
@@ -36,14 +36,11 @@ export default function Navbar() {
     <nav className="bg-white border-b border-gray-200 shadow px-6 py-4">
       <div className="flex justify-between items-center">
         {/* Logo */}
-        <img src="/logo1.png" alt="Logo" className="h-10 w-auto" />
+        <img src="/logo1.png" alt="Logo" className="h-10 w-auto md:block hidden" />
 
-        {/* Menu button (mobile) */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2"
-        >
-          <Menu size={28} />
+        {/* Mobile menu toggle */}
+        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 ml-auto">
+          {menuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
 
         {/* Desktop menu */}
@@ -75,17 +72,27 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden mt-4 space-y-3 text-center">
+        <div className="md:hidden mt-6 flex flex-col items-center text-center space-y-3">
+          {/* Logo centré */}
+          <img src="/logo1.png" alt="Logo" className="h-20 w-auto" />
+
+          {/* Nom connecté centré */}
           <p className="text-black text-sm">
             Connecté : <strong>{user.prenom} {user.nom}</strong>
           </p>
-          <div className="flex flex-col items-center space-y-2">
+
+          {/* Lien de navigation */}
+          <div className="flex flex-col items-center space-y-2 w-full">
             <NavItem href="/evenements" label="Événements" />
             <NavItem href="/calendrier" label="Calendrier" />
             {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
             {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
             {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
             <NavItem href="/notifications" label="Notifications" />
+          </div>
+
+          {/* Déconnexion centrée */}
+          <div className="mt-4">
             <LogoutButton />
           </div>
         </div>
