@@ -27,7 +27,7 @@ export default function MesInscriptionsPage() {
     const fetchInscriptions = async () => {
       const { data, error } = await supabase
         .from("inscriptions")
-        .select("id, event_id, events(*)")
+        .select("events(id, titre, date, heure_debut, heure_fin, description, urgence, annule)")
         .eq("user_id", user.id)
 
       if (error) {
@@ -35,8 +35,8 @@ export default function MesInscriptionsPage() {
         return
       }
 
-      // ✅ Corrigé : aplatir les résultats si nécessaire
-      const eventsOnly = data.map((inscription) => inscription.events).flat()
+      // ✅ Corrigé : récupérer les objets event proprement
+      const eventsOnly = (data || []).map((item) => item.events)
       setEvents(eventsOnly)
       setLoading(false)
     }
