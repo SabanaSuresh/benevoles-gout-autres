@@ -6,20 +6,20 @@ import { useUser } from "@/lib/userStore"
 export default function ListeInscritsPage() {
   const { user, loading } = useUser()
 
-  // ✅ Typage corrigé
+  // ✅ Typage amélioré
   type Inscription = {
     id: number
     users: {
-      prenom: string
-      nom: string
-    }[] // Supabase renvoie un tableau de users
+      prenom: string | null
+      nom: string | null
+    }[] | null
   }
 
   type Event = {
     id: number
     titre: string
     date: string
-    inscriptions?: Inscription[]
+    inscriptions?: Inscription[] | null
   }
 
   const [events, setEvents] = useState<Event[]>([])
@@ -71,21 +71,24 @@ export default function ListeInscritsPage() {
           <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
           <p className="text-sm text-gray-600 mb-2">{event.date}</p>
 
-          {event.inscriptions && event.inscriptions.length === 0 ? (
-            <p className="text-gray-500 italic">Aucun inscrit</p>
-          ) : (
+          {event.inscriptions && event.inscriptions.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-800">
-              {event.inscriptions?.map((inscription) => {
-                const user = inscription.users[0] // 👈 on prend le 1er utilisateur du tableau
-                return (
-                  <li key={inscription.id}>
-                    {user
-                      ? `${user.prenom} ${user.nom}`
-                      : "Utilisateur inconnu"}
-                  </li>
+              {event.inscriptions.map((inscription) =>
+                (inscription.users || []).map((u, i) =>
+                  u?.prenom && u?.nom ? (
+                    <li key={`${inscription.id}-${i}`}>
+                      {u.prenom} {u.nom}
+                    </li>
+                  ) : (
+                    <li key={`${inscription.id}-${i}`} className="text-gray-400 italic">
+                      Utilisateur inconnu
+                    </li>
+                  )
                 )
-              })}
+              )}
             </ul>
+          ) : (
+            <p className="text-gray-500 italic">Aucun inscrit</p>
           )}
         </div>
       ))}

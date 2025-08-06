@@ -119,7 +119,7 @@ export default function EvenementsPage() {
                 <p className="text-[#f1887c] font-bold mt-1">🚨 Urgence</p>
               )}
               {event.annule && (
-                <p className="text-red-500 font-bold mt-1">❌ Événement annulé</p>
+                <p className="text-red-500 font-bold mt-1"> Événement annulé</p>
               )}
 
               {/* BOUTONS BÉNÉVOLE */}
@@ -130,7 +130,7 @@ export default function EvenementsPage() {
                       onClick={() => handleDesinscription(event.id)}
                       className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl"
                     >
-                      ❌ Me désinscrire
+                       Me désinscrire
                     </button>
                   ) : isComplet ? (
                     <span className="text-red-600 font-semibold">Complet</span>
