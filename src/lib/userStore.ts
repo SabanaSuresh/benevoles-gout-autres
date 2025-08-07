@@ -19,15 +19,21 @@ export function useUser() {
   useEffect(() => {
     const getUser = async () => {
       const { data: sessionData } = await supabase.auth.getSession()
-      const session = sessionData.session
-      if (!session) {
+      let userId = sessionData.session?.user?.id
+      let email = sessionData.session?.user?.email
+
+      // ✅ Fallback si session pas encore attachée
+      if (!userId || !email) {
+        const { data: userData } = await supabase.auth.getUser()
+        userId = userData.user?.id
+        email = userData.user?.email
+      }
+
+      if (!userId) {
         setUser(null)
         setLoading(false)
         return
       }
-
-      const userId = session.user.id
-      const email = session.user.email
 
       const { data, error } = await supabase
         .from('users')
