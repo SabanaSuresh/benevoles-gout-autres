@@ -48,21 +48,21 @@ export default function ListeInscritsPage() {
       if (error) {
         console.error("Erreur chargement :", error.message)
       } else {
-        const formatted: Event[] = (data ?? []).map((event): Event => ({
-          id: event.id,
-          titre: event.titre,
-          date: event.date,
-          inscriptions: (event.inscriptions ?? []).map((i: any): Inscription => ({
-            id: i.id,
-            users: i.users
-              ? {
-                  email: i.users.email,
-                  prenom: i.users.prenom,
-                  nom: i.users.nom,
-                }
-              : null,
-          })),
-        }))
+        const formatted: Event[] = (data ?? []).map((event) => {
+          return {
+            id: event.id,
+            titre: event.titre,
+            date: event.date,
+            inscriptions: (event.inscriptions ?? []).map((i): Inscription => {
+              const user = i.users as User | null
+              return {
+                id: i.id,
+                users: user,
+              }
+            }),
+          }
+        })
+
         setEvents(formatted)
       }
     }
