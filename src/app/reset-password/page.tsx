@@ -23,7 +23,7 @@ export default function ResetPasswordPage() {
       <h1 className="text-2xl font-bold mb-4">Mot de passe oublié</h1>
       <input
         type="email"
-        placeholder="Ton email"
+        placeholder="Votre email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="border p-2 w-full rounded"
