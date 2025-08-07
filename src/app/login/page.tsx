@@ -59,6 +59,12 @@ export default function LoginPage() {
             S’inscrire
           </a>
         </p>
+
+        <p className="text-sm text-center mt-2">
+          <a href="/reset-password" className="text-[#1e5363] font-semibold hover:underline">
+            Mot de passe oublié ?
+          </a>
+        </p>
       </div>
     </main>
   )
