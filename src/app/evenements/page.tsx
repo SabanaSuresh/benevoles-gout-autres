@@ -54,8 +54,15 @@ export default function EvenementsPage() {
   }, [])
 
   const handleInscription = async (eventId: string) => {
-    if (!user) return
-    const dejaInscrit = events.find(e => e.id === eventId)?.inscriptions.some(i => i.users?.id === user.id)
+    if (!user || !user.id) {
+      alert("Utilisateur non identifié")
+      console.log("user.id manquant : ", user)
+      return
+    }
+
+    const dejaInscrit = events.find(e => e.id === eventId)
+      ?.inscriptions?.some(i => i.users?.id === user.id)
+
     if (dejaInscrit) {
       alert("Vous êtes déjà inscrit à cet événement.")
       return
@@ -104,9 +111,7 @@ export default function EvenementsPage() {
           return (
             <div
               key={event.id}
-              className={`border rounded-xl p-4 shadow transition ${
-                event.annule ? "opacity-50 line-through" : ""
-              } ${event.urgence ? "border-[#f1887c] bg-[#fff5f5]" : "border-gray-300 bg-white"}`}
+              className={\`border rounded-xl p-4 shadow transition \${event.annule ? "opacity-50 line-through" : ""} \${event.urgence ? "border-[#f1887c] bg-[#fff5f5]" : "border-gray-300 bg-white"}\`}
             >
               <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
               <p className="text-sm text-gray-600">
@@ -115,7 +120,7 @@ export default function EvenementsPage() {
               <p className="mt-2 text-gray-800">{event.description}</p>
               <p className="mt-1 text-sm font-medium">
                 {isLimiteActive
-                  ? `${(event.nb_places ?? 0) - inscriptionsCount} place(s) restante(s) sur ${event.nb_places}`
+                  ? \`\${(event.nb_places ?? 0) - inscriptionsCount} place(s) restante(s) sur \${event.nb_places}\`
                   : "Places illimitées"}
               </p>
               {event.urgence && (
@@ -154,7 +159,7 @@ export default function EvenementsPage() {
                     {event.inscriptions.map((inscription) => (
                       <li key={inscription.id}>
                         {inscription.users
-                          ? `${inscription.users.prenom} ${inscription.users.nom}`
+                          ? \`\${inscription.users.prenom} \${inscription.users.nom}\`
                           : "Anonyme"}
                       </li>
                     ))}
