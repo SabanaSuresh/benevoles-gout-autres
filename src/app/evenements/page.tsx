@@ -148,7 +148,7 @@ export default function EvenementsPage() {
                         router.refresh()
                       }
                     }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+                    className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl"
                   >
                     Annuler
                   </button>
