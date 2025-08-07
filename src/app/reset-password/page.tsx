@@ -8,7 +8,7 @@ export default function ResetPasswordPage() {
 
   const handleReset = async () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "http://localhost:3000/update-password", // change pour ton domaine
+      redirectTo: "https://benevoles-gout-autres.vercel.app/update-password", // change pour ton domaine
     })
 
     if (error) {
