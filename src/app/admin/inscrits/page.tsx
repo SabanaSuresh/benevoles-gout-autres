@@ -54,7 +54,10 @@ export default function ListeInscritsPage() {
             titre: event.titre,
             date: event.date,
             inscriptions: (event.inscriptions ?? []).map((i): Inscription => {
-              const user = i.users as User | null
+              const user = Array.isArray(i.users)
+                ? i.users[0]
+                : (i.users as User | null)
+
               return {
                 id: i.id,
                 users: user,
