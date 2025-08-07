@@ -9,6 +9,7 @@ type User = {
   email: string
   nom: string
   prenom: string
+  role?: string
 }
 
 type Inscription = {
@@ -130,6 +131,37 @@ export default function EvenementsPage() {
                 <p className="text-red-500 font-bold mt-1"> Événement annulé</p>
               )}
 
+              {/* Boutons admin */}
+              {user?.role === "admin" && !event.annule && (
+                <div className="mt-4 flex space-x-2">
+                  <button
+                    onClick={async () => {
+                      const { error } = await supabase
+                        .from("events")
+                        .update({ annule: true })
+                        .eq("id", event.id)
+
+                      if (error) {
+                        alert("Erreur lors de l’annulation : " + error.message)
+                      } else {
+                        alert("Événement annulé.")
+                        router.refresh()
+                      }
+                    }}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => router.push(`/admin/modifier/${event.id}`)}
+                    className="bg-[#3e878e] hover:bg-[#aad7d4] text-white px-4 py-1 rounded"
+                  >
+                    Modifier
+                  </button>
+                </div>
+              )}
+
+              {/* Boutons bénévole */}
               {user?.role === "benevole" && !event.annule && (
                 <div className="mt-3">
                   {dejaInscrit ? (
@@ -152,6 +184,7 @@ export default function EvenementsPage() {
                 </div>
               )}
 
+              {/* Liste des inscrits */}
               {event.inscriptions && event.inscriptions.length > 0 && (
                 <div className="mt-4 text-sm">
                   <p className="font-semibold mb-1">Bénévoles inscrits :</p>
