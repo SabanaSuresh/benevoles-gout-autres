@@ -48,7 +48,21 @@ export default function ListeInscritsPage() {
       if (error) {
         console.error("Erreur chargement :", error.message)
       } else {
-        setEvents(data || [])
+        // ✅ correction ici : typage explicite
+        const formatted = data.map((event: any) => ({
+          id: event.id,
+          titre: event.titre,
+          date: event.date,
+          inscriptions: event.inscriptions?.map((i: any) => ({
+            id: i.id,
+            users: i.users ? {
+              email: i.users.email,
+              prenom: i.users.prenom,
+              nom: i.users.nom
+            } : null
+          })) ?? []
+        }))
+        setEvents(formatted)
       }
     }
 
