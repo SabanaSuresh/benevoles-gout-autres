@@ -26,7 +26,7 @@ export default function SignupPage() {
 
     const normalizedEmail = form.email.trim().toLowerCase()
 
-    // (optionnel) validations rapides côté client
+    // validations rapides côté client
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
       setErrorMsg("Merci d’entrer un email valide.")
       setLoading(false)
@@ -38,12 +38,18 @@ export default function SignupPage() {
       return
     }
 
-    // 1) Création du compte Auth
+    // 1) Création du compte Auth + metadata
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password: form.password,
-      // Vous pouvez ajouter emailRedirectTo si vous utilisez la confirmation d’email
-      // options: { emailRedirectTo: `${location.origin}/auth/callback` }
+      options: {
+        data: {
+          prenom: form.prenom,
+          nom: form.nom,
+          role: "benevole",
+        },
+        // emailRedirectTo: `${location.origin}/login`, // optionnel
+      },
     })
 
     if (error) {
@@ -52,34 +58,27 @@ export default function SignupPage() {
       return
     }
 
-    // 2) Upsert du profil app dans public.users (→ AJOUT DE email)
-    if (data.user) {
-      const { error: userError } = await supabase
-        .from("users")
-        .upsert({
-          id: data.user.id,
-          prenom: form.prenom,
-          nom: form.nom,
-          role: "benevole",
-          email: normalizedEmail, // ✅ corrige le NULL dans public.users
-        })
+    // 2) Si une session existe (confirmation désactivée), on peut upsert le profil tout de suite
+    if (data.session && data.user) {
+      const { error: userError } = await supabase.from("users").upsert({
+        id: data.user.id,
+        prenom: form.prenom,
+        nom: form.nom,
+        role: "benevole",
+        email: normalizedEmail, // évite NULL dans public.users
+      })
 
       if (userError) {
         setErrorMsg("Erreur mise à jour profil : " + userError.message)
         setLoading(false)
         return
       }
-    }
 
-    // 3) Message en fonction de la confirmation d’email
-    // Si la confirmation est activée sur Supabase, data.session peut être null.
-    if (!data.session) {
-      alert(
-        "Inscription réussie. Vérifie ta boîte mail pour confirmer ton adresse avant de te connecter."
-      )
+      alert("Inscription réussie, tu peux te connecter maintenant.")
       router.push("/login")
     } else {
-      alert("Inscription réussie, tu peux te connecter maintenant.")
+      // 3) Si confirmation d’email activée (pas de session), ne pas upsert ici (RLS bloquerait)
+      alert("Inscription réussie. Vérifie ta boîte mail pour confirmer ton adresse avant de te connecter.")
       router.push("/login")
     }
 
