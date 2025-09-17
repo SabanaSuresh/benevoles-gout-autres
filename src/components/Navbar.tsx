@@ -57,9 +57,15 @@ export default function Navbar() {
 
           <NavItem href="/evenements" label="Événements" />
           <NavItem href="/calendrier" label="Calendrier" />
+
+          {/* Liens réservés à l’admin */}
           {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
           {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
+          {user.role === "admin" && <NavItem href="/admin/benevoles" label="Liste des bénévoles" />}
+
+          {/* Lien réservé au bénévole */}
           {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
+
           <NavItem
             href="/notifications"
             label={
