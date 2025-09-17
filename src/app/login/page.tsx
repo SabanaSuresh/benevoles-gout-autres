@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -41,12 +42,12 @@ export default function LoginPage() {
             required
           />
 
-          {/* Champ mot de passe avec bouton œil */}
+          {/* Champ mot de passe avec icône œil */}
           <div className="relative w-full">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Mot de passe"
-              className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
+              className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg pr-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -54,9 +55,9 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#1e5363]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#1e5363] focus:outline-none"
             >
-              {showPassword ? "🙈" : "👁️"}
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
 
