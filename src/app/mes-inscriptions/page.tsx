@@ -58,6 +58,19 @@ export default function MesInscriptionsPage() {
     }
   }
 
+  // 🔹 Helper pour formater la date (JJ/MM/AAAA)
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return ""
+    const d = new Date(dateStr)
+    return d.toLocaleDateString("fr-FR") // => 17/09/2025
+  }
+
+  // 🔹 Helper pour formater l’heure (HH:MM sans secondes)
+  const formatHeure = (timeStr: string) => {
+    if (!timeStr) return ""
+    return timeStr.slice(0, 5) // "14:30:00" => "14:30"
+  }
+
   if (!user || user.role !== "benevole") {
     return <div className="p-4 text-red-600">Page réservée aux bénévoles.</div>
   }
@@ -81,7 +94,7 @@ export default function MesInscriptionsPage() {
             >
               <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
               <p className="text-sm text-gray-600">
-                {event.date} — {event.heure_debut} à {event.heure_fin}
+                {formatDate(event.date)} — {formatHeure(event.heure_debut)} à {formatHeure(event.heure_fin)}
               </p>
               <p className="mt-2 text-gray-800">{event.description}</p>
 
