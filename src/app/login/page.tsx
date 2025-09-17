@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,48 +21,73 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[--color-bg] flex flex-col items-center pt-10 px-4">
-      <div className="bg-white p-6 rounded-xl shadow w-full max-w-md">
-        <h1 className="text-3xl font-bold text-[#1e5363] mb-6 text-center">Connexion</h1>
+    <main className="min-h-screen bg-[--color-bg] flex flex-col items-center pt-16 px-6">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+        <h1 className="text-4xl font-bold text-[#1e5363] mb-8 text-center">
+          Connexion
+        </h1>
 
-        <form onSubmit={handleLogin} className="space-y-4 flex flex-col items-center">
+        <form
+          onSubmit={handleLogin}
+          className="space-y-6 flex flex-col items-center w-full"
+        >
+          {/* Champ email */}
           <input
             type="email"
             placeholder="Email"
-            style={{ width: "384px" }}
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+            className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <input
-            type="password"
-            placeholder="Mot de passe"
-            style={{ width: "384px" }}
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+
+          {/* Champ mot de passe avec bouton œil */}
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Mot de passe"
+              className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#1e5363]"
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
+
+          {/* Message d'erreur */}
           {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          {/* Bouton connexion */}
           <button
             type="submit"
-            style={{ width: "288px" }}
-            className="bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold py-2 px-6 rounded transition"
+            className="w-3/4 bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold py-3 px-6 rounded-lg text-lg transition"
           >
             Se connecter
           </button>
         </form>
 
-        <p className="text-sm text-center mt-4">
+        {/* Liens secondaires */}
+        <p className="text-sm text-center mt-6">
           Pas encore de compte ?{" "}
-          <a href="/signup" className="text-[#1e5363] font-semibold hover:underline">
+          <a
+            href="/signup"
+            className="text-[#1e5363] font-semibold hover:underline"
+          >
             S’inscrire
           </a>
         </p>
 
-        <p className="text-sm text-center mt-2">
-          <a href="/reset-password" className="text-[#1e5363] font-semibold hover:underline">
+        <p className="text-sm text-center mt-3">
+          <a
+            href="/reset-password"
+            className="text-[#1e5363] font-semibold hover:underline"
+          >
             Mot de passe oublié ?
           </a>
         </p>
