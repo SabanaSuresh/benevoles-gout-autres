@@ -63,8 +63,9 @@ export default function Navbar() {
           {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
           {user.role === "admin" && <NavItem href="/admin/benevoles" label="Liste des bénévoles" />}
 
-          {/* Lien réservé au bénévole */}
+          {/* Liens réservés aux bénévoles */}
           {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
+          {user.role === "benevole" && <NavItem href="/mes-heures" label="Mes heures" />}
 
           <NavItem
             href="/notifications"
