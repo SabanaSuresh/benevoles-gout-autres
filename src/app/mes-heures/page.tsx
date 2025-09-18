@@ -30,7 +30,11 @@ export default function MesHeuresPage() {
         return
       }
 
-      const eventsOnly = data.map((i) => i.events).filter(Boolean)
+      // ✅ correction : gérer le cas array et caster en Event[]
+      const eventsOnly = data
+        .map((i) => (Array.isArray(i.events) ? i.events[0] : i.events))
+        .filter(Boolean) as Event[]
+
       setEvents(eventsOnly)
       setLoading(false)
     }
