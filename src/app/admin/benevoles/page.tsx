@@ -46,7 +46,8 @@ export default function ListeBenevolesPage() {
       const heuresParBenevole: Record<string, number> = {}
 
       inscriptions?.forEach((i) => {
-        const ev = i.events
+        // ⚠️ Correction : gérer le cas array
+        const ev = Array.isArray(i.events) ? i.events[0] : i.events
         if (!ev) return
         const [h1, m1] = ev.heure_debut.split(":").map(Number)
         const [h2, m2] = ev.heure_fin.split(":").map(Number)
