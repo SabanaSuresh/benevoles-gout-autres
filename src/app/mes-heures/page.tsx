@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useUser } from "@/lib/userStore"
-import LogoutButton from "./LogoutButton"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { Menu, X } from "lucide-react"
