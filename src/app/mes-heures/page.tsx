@@ -81,7 +81,6 @@ export default function Navbar() {
           />
 
           <div className="text-center">
-            <LogoutButton />
           </div>
         </div>
       )}
