@@ -3,10 +3,6 @@ import { useEffect, useState } from "react"
 import Calendar from "react-calendar"
 import "react-calendar/dist/Calendar.css"
 import { supabase } from "@/lib/supabase"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useUser } from "@/lib/userStore"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useRouter } from "next/navigation"
 
 type Event = {
   id: string
@@ -20,9 +16,11 @@ export default function CalendrierPage() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const todayLocal = new Date().toLocaleDateString("fr-CA")
       const { data, error } = await supabase
         .from("events")
         .select("id, titre, date")
+        .gte("date", todayLocal) // ✅ masquer les dates passées
         .order("date", { ascending: true })
 
       if (!error && data) {

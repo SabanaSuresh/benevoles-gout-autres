@@ -35,8 +35,15 @@ export default function MesInscriptionsPage() {
         return
       }
 
-      const eventsOnly = data.map((inscription) => inscription.events).flat()
-      setEvents(eventsOnly)
+      // Gérer array/non-array puis filtrer sur la date locale >= aujourd'hui
+      const todayLocal = new Date().toLocaleDateString("fr-CA")
+      const eventsOnly = (data || [])
+        .map((insc) => (Array.isArray(insc.events) ? insc.events[0] : insc.events))
+        .filter(Boolean) as Event[]
+
+      const upcoming = eventsOnly.filter((e) => e.date >= todayLocal)
+
+      setEvents(upcoming)
       setLoading(false)
     }
 
@@ -58,17 +65,15 @@ export default function MesInscriptionsPage() {
     }
   }
 
-  // 🔹 Helper pour formater la date (JJ/MM/AAAA)
   const formatDate = (dateStr: string) => {
     if (!dateStr) return ""
     const d = new Date(dateStr)
-    return d.toLocaleDateString("fr-FR") // => 17/09/2025
+    return d.toLocaleDateString("fr-FR")
   }
 
-  // 🔹 Helper pour formater l’heure (HH:MM sans secondes)
   const formatHeure = (timeStr: string) => {
     if (!timeStr) return ""
-    return timeStr.slice(0, 5) // "14:30:00" => "14:30"
+    return timeStr.slice(0, 5)
   }
 
   if (!user || user.role !== "benevole") {
@@ -84,7 +89,7 @@ export default function MesInscriptionsPage() {
       </h1>
 
       {events.length === 0 ? (
-        <p className="text-gray-600">Tu n’es inscrit à aucun événement pour le moment.</p>
+        <p className="text-gray-600">Tu n’es inscrit à aucun événement à venir.</p>
       ) : (
         <div className="space-y-4">
           {events.map((event) => (
@@ -98,12 +103,8 @@ export default function MesInscriptionsPage() {
               </p>
               <p className="mt-2 text-gray-800">{event.description}</p>
 
-              {event.urgence && (
-                <p className="text-red-600 font-bold mt-2">🚨 Urgence</p>
-              )}
-              {event.annule && (
-                <p className="text-red-500 font-bold mt-2">❌ Événement annulé</p>
-              )}
+              {event.urgence && <p className="text-red-600 font-bold mt-2">🚨 Urgence</p>}
+              {event.annule && <p className="text-red-500 font-bold mt-2">❌ Événement annulé</p>}
 
               <button
                 onClick={() => handleDesinscription(event.id)}
