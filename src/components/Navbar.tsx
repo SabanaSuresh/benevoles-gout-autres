@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useUser } from "@/lib/userStore"
 import LogoutButton from "./LogoutButton"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { Menu, X } from "lucide-react"
 
@@ -12,24 +13,25 @@ export default function Navbar() {
   const [nbNotifs, setNbNotifs] = useState(0)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const fetchNotificationsCount = async () => {
+  // ✅ Mémoïsation pour corriger le warning de dépendances
+  const fetchNotificationsCount = useCallback(async () => {
     if (!user) return
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("notifications")
       .select("*", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("vu", false)
 
-    if (!error) {
-      setNbNotifs(data?.length || 0)
+    if (!error && typeof count === "number") {
+      setNbNotifs(count)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     fetchNotificationsCount()
     const interval = setInterval(fetchNotificationsCount, 30000)
     return () => clearInterval(interval)
-  }, [user])
+  }, [fetchNotificationsCount])
 
   if (loading || !user) return null
 
@@ -38,11 +40,13 @@ export default function Navbar() {
       {/* Logo et bouton menu */}
       <div className="flex items-center justify-between px-4 py-2">
         <div>
-          <img src="/logo1.png" alt="Logo" className="h-12 w-auto" />
+          {/* ✅ Image optimisée */}
+          <Image src="/logo1.png" alt="Logo" width={96} height={48} className="h-12 w-auto" priority />
         </div>
         <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={() => setIsMenuOpen((v) => !v)}
           className="p-2 border rounded"
+          aria-label="Ouvrir/fermer le menu"
         >
           {isMenuOpen ? <X /> : <Menu />}
         </button>
@@ -58,12 +62,12 @@ export default function Navbar() {
           <NavItem href="/evenements" label="Événements" />
           <NavItem href="/calendrier" label="Calendrier" />
 
-          {/* Liens réservés à l’admin */}
+          {/* Liens admin */}
           {user.role === "admin" && <NavItem href="/admin/ajouter" label="Ajouter événement" />}
           {user.role === "admin" && <NavItem href="/admin/inscrits" label="Voir les inscrits" />}
           {user.role === "admin" && <NavItem href="/admin/benevoles" label="Liste des bénévoles" />}
 
-          {/* Liens réservés aux bénévoles */}
+          {/* Liens bénévole */}
           {user.role === "benevole" && <NavItem href="/mes-inscriptions" label="Mes inscriptions" />}
           {user.role === "benevole" && <NavItem href="/mes-heures" label="Mes heures" />}
 

@@ -1,14 +1,18 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#f7f7f7] flex flex-col items-center justify-center px-6 text-center font-sans">
-      {/* ✅ Logo en haut */}
-      <img
+      {/* ✅ Image optimisée */}
+      <Image
         src="/logo.png"
         alt="Logo Le Goût des Autres"
-        className="h-20 mb-6"
+        width={160}
+        height={80}
+        className="h-20 w-auto mb-6"
+        priority
       />
 
       <div className="max-w-xl space-y-6">
@@ -21,7 +25,6 @@ export default function HomePage() {
           et aux administrateurs de les organiser.
         </p>
 
-        {/* ✅ Boutons centrés avec taille fixe */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
           <Link
             href="/login"

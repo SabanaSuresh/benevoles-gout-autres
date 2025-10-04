@@ -34,7 +34,27 @@ function writeCache(user: UserInfo | null) {
   }
 }
 
-async function fetchUserInfoFromDB(userId: string, fallbackEmail: string, metadata?: Record<string, any>): Promise<UserInfo | null> {
+function readMetaString(meta: unknown, key: string): string {
+  if (meta && typeof meta === 'object' && key in (meta as Record<string, unknown>)) {
+    const val = (meta as Record<string, unknown>)[key]
+    return typeof val === 'string' ? val : ''
+  }
+  return ''
+}
+
+function readMetaRole(meta: unknown): Role {
+  if (meta && typeof meta === 'object' && 'role' in (meta as Record<string, unknown>)) {
+    const val = (meta as Record<string, unknown>)['role']
+    if (val === 'admin' || val === 'benevole') return val
+  }
+  return null
+}
+
+async function fetchUserInfoFromDB(
+  userId: string,
+  fallbackEmail: string,
+  metadata?: unknown
+): Promise<UserInfo | null> {
   const { data, error } = await supabase
     .from('users')
     .select('role, prenom, nom')
@@ -46,17 +66,14 @@ async function fetchUserInfoFromDB(userId: string, fallbackEmail: string, metada
     return null
   }
 
-  // Si pas encore de ligne dans public.users, on tente un fallback via les metadata Auth
+  // Si pas encore de ligne dans public.users, utiliser les metadata Auth en secours
   if (!data) {
-    const metaPrenom = (metadata?.prenom as string) || ''
-    const metaNom = (metadata?.nom as string) || ''
-    const metaRole = (metadata?.role as Role) ?? null
     return {
       id: userId,
       email: fallbackEmail,
-      role: metaRole,
-      prenom: metaPrenom,
-      nom: metaNom,
+      role: readMetaRole(metadata),
+      prenom: readMetaString(metadata, 'prenom'),
+      nom: readMetaString(metadata, 'nom'),
     }
   }
 
@@ -78,7 +95,7 @@ export function useUser() {
     mountedRef.current = true
 
     const hydrateFromSession = async () => {
-      // 1) Récupérer la session actuelle (Supabase restaure depuis localStorage si persistSession=true côté client)
+      // 1) Récupérer la session actuelle (persistée localement si configurée dans supabase client)
       const { data: sessionData } = await supabase.auth.getSession()
       let session = sessionData.session
 
@@ -86,7 +103,6 @@ export function useUser() {
       if (!session) {
         const { data: userData } = await supabase.auth.getUser()
         if (userData?.user) {
-          // Reconstruire une "mini session" utile pour les infos
           session = {
             access_token: '',
             token_type: 'bearer',
@@ -101,7 +117,6 @@ export function useUser() {
       }
 
       if (!session?.user) {
-        // Pas connecté
         setUser((prev) => {
           if (prev !== null) writeCache(null)
           return null
@@ -126,25 +141,22 @@ export function useUser() {
       setLoading(false)
     }
 
-    // Charger rapidement depuis le cache (si présent), puis valider via Supabase
+    // Afficher rapidement depuis le cache si présent, puis valider via Supabase
     const cached = readCache()
     if (!cached) {
-      // pas de cache → on reste en "loading" le temps d’hydrater
       setLoading(true)
     } else {
-      // cache présent → on montre tout de suite, puis on rafraîchit en arrière-plan
       setUser(cached)
       setLoading(false)
     }
 
     hydrateFromSession()
 
-    // 2) Abonnement aux changements d’état Auth (login, logout, refresh)
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      // Quelques events utiles : SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED, SIGNED_OUT
+    // 2) Suivre les changements d’auth (login/logout/refresh)
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (!mountedRef.current) return
 
-      if (!newSession?.user || event === 'SIGNED_OUT') {
+      if (!newSession?.user) {
         setUser(null)
         writeCache(null)
         return
@@ -173,5 +185,4 @@ export function useUser() {
 
   return { user, loading }
 }
-
 
