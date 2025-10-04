@@ -26,7 +26,6 @@ export default function SignupPage() {
 
     const normalizedEmail = form.email.trim().toLowerCase()
 
-    // validations rapides côté client
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
       setErrorMsg("Merci d’entrer un email valide.")
       setLoading(false)
@@ -38,17 +37,11 @@ export default function SignupPage() {
       return
     }
 
-    // 1) Création du compte Auth + metadata
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password: form.password,
       options: {
-        data: {
-          prenom: form.prenom,
-          nom: form.nom,
-          role: "benevole",
-        },
-        // emailRedirectTo: `${location.origin}/login`, // optionnel
+        data: { prenom: form.prenom, nom: form.nom, role: "benevole" },
       },
     })
 
@@ -58,14 +51,13 @@ export default function SignupPage() {
       return
     }
 
-    // 2) Si une session existe (confirmation désactivée), on peut upsert le profil tout de suite
     if (data.session && data.user) {
       const { error: userError } = await supabase.from("users").upsert({
         id: data.user.id,
         prenom: form.prenom,
         nom: form.nom,
         role: "benevole",
-        email: normalizedEmail, // évite NULL dans public.users
+        email: normalizedEmail,
       })
 
       if (userError) {
@@ -77,7 +69,6 @@ export default function SignupPage() {
       alert("Inscription réussie, tu peux te connecter maintenant.")
       router.push("/login")
     } else {
-      // 3) Si confirmation d’email activée (pas de session), ne pas upsert ici (RLS bloquerait)
       alert("Inscription réussie. Vérifie ta boîte mail pour confirmer ton adresse avant de te connecter.")
       router.push("/login")
     }
@@ -92,59 +83,77 @@ export default function SignupPage() {
           Créer un compte
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4 flex flex-col items-center">
-          <input
-            type="text"
-            name="prenom"
-            placeholder="Prénom"
-            value={form.prenom}
-            onChange={handleChange}
-            style={{ width: "384px" }}
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
-            required
-          />
-          <input
-            type="text"
-            name="nom"
-            placeholder="Nom"
-            value={form.nom}
-            onChange={handleChange}
-            style={{ width: "384px" }}
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            style={{ width: "384px" }}
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Mot de passe"
-            value={form.password}
-            onChange={handleChange}
-            style={{ width: "384px" }}
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
-            required
-          />
+        {/* ⚠️ Activer l’autofill */}
+        <form onSubmit={handleSubmit} autoComplete="on" className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="prenom" className="text-sm font-medium">Prénom</label>
+            <input
+              id="prenom"
+              name="prenom"
+              type="text"
+              placeholder="Prénom"
+              value={form.prenom}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+              required
+              autoComplete="given-name"
+            />
+          </div>
 
-          {errorMsg && (
-            <p className="text-red-600 text-sm self-start" style={{ width: "384px" }}>
-              {errorMsg}
-            </p>
-          )}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="nom" className="text-sm font-medium">Nom</label>
+            <input
+              id="nom"
+              name="nom"
+              type="text"
+              placeholder="Nom"
+              value={form.nom}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+              required
+              autoComplete="family-name"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="nom@domaine.fr"
+              value={form.email}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+              required
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              autoComplete="username email"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="text-sm font-medium">Mot de passe</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Mot de passe"
+              value={form.password}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+              required
+              autoComplete="new-password"  // ✅ important pour l’enregistrement initial
+            />
+          </div>
+
+          {errorMsg && <p className="text-red-600 text-sm">{errorMsg}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            style={{ width: "288px" }}
-            className="bg-[#aad7d4] hover:bg-[#3e878e] disabled:opacity-60 text-black font-semibold py-2 rounded transition"
+            className="w-full bg-[#aad7d4] hover:bg-[#3e878e] disabled:opacity-60 text-black font-semibold py-2 rounded transition"
           >
             {loading ? "Création..." : "Créer le compte"}
           </button>

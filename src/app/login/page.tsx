@@ -11,12 +11,13 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError(error.message)
-    } else {
-      router.push("/evenements")
+      return
     }
+    router.push("/evenements")
   }
 
   return (
@@ -26,34 +27,43 @@ export default function LoginPage() {
           Connexion
         </h1>
 
-        <form
-          onSubmit={handleLogin}
-          className="space-y-8 flex flex-col items-center w-full"
-        >
-          {/* Champ email */}
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border border-gray-300 px-5 py-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        {/* ⚠️ Laisser autocomplete actif pour permettre l'autofill */}
+        <form onSubmit={handleLogin} autoComplete="on" className="space-y-8 w-full">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="nom@domaine.fr"
+              className="w-full border border-gray-300 px-5 py-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              autoComplete="username email"
+            />
+          </div>
 
-          {/* Champ mot de passe en clair */}
-          <input
-            type="text"
-            placeholder="Mot de passe"
-            className="w-full border border-gray-300 px-5 py-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="text-sm font-medium">Mot de passe</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Mot de passe"
+              className="w-full border border-gray-300 px-5 py-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"  // ✅ clé pour l’autoremplissage
+            />
+          </div>
 
-          {/* Message d'erreur */}
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
-          {/* Bouton connexion */}
           <button
             type="submit"
             className="w-full bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold py-4 rounded-lg text-lg transition"
@@ -62,22 +72,15 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Liens secondaires */}
         <p className="text-base text-center mt-8">
           Pas encore de compte ?{" "}
-          <a
-            href="/signup"
-            className="text-[#1e5363] font-semibold hover:underline"
-          >
+          <a href="/signup" className="text-[#1e5363] font-semibold hover:underline">
             S’inscrire
           </a>
         </p>
 
         <p className="text-base text-center mt-4">
-          <a
-            href="/reset-password"
-            className="text-[#1e5363] font-semibold hover:underline"
-          >
+          <a href="/reset-password" className="text-[#1e5363] font-semibold hover:underline">
             Mot de passe oublié ?
           </a>
         </p>
