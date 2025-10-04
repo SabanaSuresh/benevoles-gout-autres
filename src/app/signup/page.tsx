@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
+import { Eye, EyeOff } from "lucide-react"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export default function SignupPage() {
     email: "",
     password: "",
   })
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -40,9 +42,7 @@ export default function SignupPage() {
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password: form.password,
-      options: {
-        data: { prenom: form.prenom, nom: form.nom, role: "benevole" },
-      },
+      options: { data: { prenom: form.prenom, nom: form.nom, role: "benevole" } },
     })
 
     if (error) {
@@ -59,13 +59,11 @@ export default function SignupPage() {
         role: "benevole",
         email: normalizedEmail,
       })
-
       if (userError) {
         setErrorMsg("Erreur mise à jour profil : " + userError.message)
         setLoading(false)
         return
       }
-
       alert("Inscription réussie, tu peux te connecter maintenant.")
       router.push("/login")
     } else {
@@ -83,7 +81,6 @@ export default function SignupPage() {
           Créer un compte
         </h1>
 
-        {/* ⚠️ Activer l’autofill */}
         <form onSubmit={handleSubmit} autoComplete="on" className="space-y-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="prenom" className="text-sm font-medium">Prénom</label>
@@ -135,17 +132,29 @@ export default function SignupPage() {
 
           <div className="flex flex-col gap-2">
             <label htmlFor="password" className="text-sm font-medium">Mot de passe</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Mot de passe"
-              value={form.password}
-              onChange={handleChange}
-              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
-              required
-              autoComplete="new-password"  // ✅ important pour l’enregistrement initial
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Mot de passe"
+                value={form.password}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 pr-12 rounded focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+                required
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-3 my-auto p-1 rounded hover:bg-gray-100"
+                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                aria-pressed={showPassword}
+                title={showPassword ? "Masquer" : "Afficher"}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           {errorMsg && <p className="text-red-600 text-sm">{errorMsg}</p>}
