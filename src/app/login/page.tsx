@@ -29,6 +29,7 @@ export default function LoginPage() {
           Connexion
         </h1>
 
+        {/* ✅ Champs plus HAUTS (h-14) et police plus grande (text-xl) */}
         <form onSubmit={handleLogin} autoComplete="on" className="space-y-8 w-full">
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -37,7 +38,7 @@ export default function LoginPage() {
               name="email"
               type="email"
               placeholder="nom@domaine.fr"
-              className="w-full border border-gray-300 px-5 py-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
+              className="w-full h-14 text-xl border border-gray-300 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -56,7 +57,7 @@ export default function LoginPage() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Mot de passe"
-                className="w-full border border-gray-300 px-5 py-4 pr-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4] text-lg"
+                className="w-full h-14 text-xl border border-gray-300 px-5 pr-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -65,12 +66,12 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-3 my-auto p-1 rounded hover:bg-gray-100"
+                className="absolute inset-y-0 right-3 my-auto p-2 rounded hover:bg-gray-100"
                 aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 aria-pressed={showPassword}
                 title={showPassword ? "Masquer" : "Afficher"}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
             </div>
           </div>
@@ -79,7 +80,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold py-4 rounded-lg text-lg transition"
+            className="w-full h-14 text-xl bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold rounded-lg transition"
           >
             Se connecter
           </button>
