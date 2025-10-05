@@ -55,34 +55,39 @@ async function fetchUserInfoFromDB(
   fallbackEmail: string,
   metadata?: unknown
 ): Promise<UserInfo | null> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('role, prenom, nom')
-    .eq('id', userId)
-    .maybeSingle()
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('role, prenom, nom')
+      .eq('id', userId)
+      .maybeSingle()
 
-  if (error) {
-    console.error('Erreur récupération utilisateur (DB) :', error.message)
-    return null
-  }
+    if (error) {
+      console.error('Erreur récupération utilisateur (DB) :', error.message)
+      return null
+    }
 
-  // Si pas encore de ligne dans public.users, utiliser les metadata Auth en secours
-  if (!data) {
+    // Pas encore de ligne dans public.users → fallback metadata Auth
+    if (!data) {
+      return {
+        id: userId,
+        email: fallbackEmail,
+        role: readMetaRole(metadata),
+        prenom: readMetaString(metadata, 'prenom'),
+        nom: readMetaString(metadata, 'nom'),
+      }
+    }
+
     return {
       id: userId,
       email: fallbackEmail,
-      role: readMetaRole(metadata),
-      prenom: readMetaString(metadata, 'prenom'),
-      nom: readMetaString(metadata, 'nom'),
+      role: data.role,
+      prenom: data.prenom ?? '',
+      nom: data.nom ?? '',
     }
-  }
-
-  return {
-    id: userId,
-    email: fallbackEmail,
-    role: data.role,
-    prenom: data.prenom ?? '',
-    nom: data.nom ?? '',
+  } catch (e) {
+    console.error('fetchUserInfoFromDB exception :', e)
+    return null
   }
 }
 
@@ -95,53 +100,63 @@ export function useUser() {
     mountedRef.current = true
 
     const hydrateFromSession = async () => {
-      // 1) Récupérer la session actuelle (persistée localement si configurée dans supabase client)
-      const { data: sessionData } = await supabase.auth.getSession()
-      let session = sessionData.session
+      try {
+        // 1) Session actuelle (Supabase restaure depuis localStorage si persistSession=true)
+        const { data: sessionData } = await supabase.auth.getSession()
+        let session = sessionData.session
 
-      // Fallback si nécessaire
-      if (!session) {
-        const { data: userData } = await supabase.auth.getUser()
-        if (userData?.user) {
-          session = {
-            access_token: '',
-            token_type: 'bearer',
-            user: userData.user,
-            expires_in: 0,
-            expires_at: 0,
-            refresh_token: '',
-            provider_token: null,
-            provider_refresh_token: null,
+        // Fallback si nécessaire
+        if (!session) {
+          const { data: userData } = await supabase.auth.getUser()
+          if (userData?.user) {
+            session = {
+              access_token: '',
+              token_type: 'bearer',
+              user: userData.user,
+              expires_in: 0,
+              expires_at: 0,
+              refresh_token: '',
+              provider_token: null,
+              provider_refresh_token: null,
+            }
           }
         }
-      }
 
-      if (!session?.user) {
-        setUser((prev) => {
-          if (prev !== null) writeCache(null)
-          return null
-        })
-        setLoading(false)
-        return
-      }
+        if (!session?.user) {
+          if (!mountedRef.current) return
+          setUser((prev) => {
+            if (prev !== null) writeCache(null)
+            return null
+          })
+          setLoading(false)
+          return
+        }
 
-      const authUser = session.user
-      const uid = authUser.id
-      const email = authUser.email ?? ''
-      const info = await fetchUserInfoFromDB(uid, email, authUser.user_metadata)
+        const authUser = session.user
+        const uid = authUser.id
+        const email = authUser.email ?? ''
+        const info = await fetchUserInfoFromDB(uid, email, authUser.user_metadata)
 
-      if (!mountedRef.current) return
-      if (info) {
-        setUser(info)
-        writeCache(info)
-      } else {
-        setUser(null)
-        writeCache(null)
+        if (!mountedRef.current) return
+        if (info) {
+          setUser(info)
+          writeCache(info)
+        } else {
+          setUser(null)
+          writeCache(null)
+        }
+      } catch (e) {
+        console.error('hydrateFromSession exception :', e)
+        if (mountedRef.current) {
+          setUser(null)
+          writeCache(null)
+        }
+      } finally {
+        if (mountedRef.current) setLoading(false)
       }
-      setLoading(false)
     }
 
-    // Afficher rapidement depuis le cache si présent, puis valider via Supabase
+    // Affichage immédiat si cache présent, sinon spinner le temps d’hydrater
     const cached = readCache()
     if (!cached) {
       setLoading(true)
@@ -152,28 +167,34 @@ export function useUser() {
 
     hydrateFromSession()
 
-    // 2) Suivre les changements d’auth (login/logout/refresh)
+    // 2) Suivre les changements d’auth (login / logout / refresh)
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      if (!mountedRef.current) return
+      try {
+        if (!mountedRef.current) return
 
-      if (!newSession?.user) {
+        if (!newSession?.user) {
+          setUser(null)
+          writeCache(null)
+          return
+        }
+
+        const u = newSession.user
+        const info = await fetchUserInfoFromDB(u.id, u.email ?? '', u.user_metadata)
+
+        if (info) {
+          setUser(info)
+          writeCache(info)
+        } else {
+          setUser(null)
+          writeCache(null)
+        }
+      } catch (e) {
+        console.error('onAuthStateChange exception :', e)
         setUser(null)
         writeCache(null)
-        return
-      }
-
-      const authUser = newSession.user
-      const uid = authUser.id
-      const email = authUser.email ?? ''
-      const info = await fetchUserInfoFromDB(uid, email, authUser.user_metadata)
-
-      if (!mountedRef.current) return
-      if (info) {
-        setUser(info)
-        writeCache(info)
-      } else {
-        setUser(null)
-        writeCache(null)
+      } finally {
+        // ✅ évite de rester bloqué sur "Chargement…" après un changement d’état
+        setLoading(false)
       }
     })
 
@@ -185,4 +206,3 @@ export function useUser() {
 
   return { user, loading }
 }
-

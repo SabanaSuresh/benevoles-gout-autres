@@ -4,13 +4,23 @@ import { useRouter, useParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { useUser } from "@/lib/userStore"
 
+type EventForm = {
+  titre: string
+  date: string
+  heure_debut: string
+  heure_fin: string
+  description: string
+  nb_places: number | null
+  urgence: boolean
+}
+
 export default function ModifierEvenementPage() {
   const { user, loading } = useUser()
   const router = useRouter()
   const params = useParams()
-  const eventId = params?.id as string
+  const eventId = (params?.id as string) || ""
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<EventForm>({
     titre: "",
     date: "",
     heure_debut: "",
@@ -22,39 +32,70 @@ export default function ModifierEvenementPage() {
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
+    if (!eventId) return
+    let mounted = true
+
     const fetchEvent = async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", eventId)
-        .single()
+      try {
+        const { data, error } = await supabase
+          .from("events")
+          .select("titre, date, heure_debut, heure_fin, description, nb_places, urgence")
+          .eq("id", eventId)
+          .single()
 
-      if (error || !data) {
-        alert("Erreur chargement de l'événement")
-        router.push("/evenements")
-        return
+        if (error || !data) {
+          alert("Erreur chargement de l'événement")
+          router.push("/evenements")
+          return
+        }
+
+        if (!mounted) return
+        setForm({
+          titre: data.titre ?? "",
+          date: data.date ?? "",
+          heure_debut: data.heure_debut ?? "",
+          heure_fin: data.heure_fin ?? "",
+          description: data.description ?? "",
+          nb_places: data.nb_places ?? 0,
+          urgence: !!data.urgence,
+        })
+      } finally {
+        if (mounted) setLoadingData(false)
       }
-
-      setForm(data)
-      setLoadingData(false)
     }
 
-    if (eventId) fetchEvent()
-  }, [eventId, router]) // ✅ ajouté router comme dépendance
+    fetchEvent()
+    return () => {
+      mounted = false
+    }
+  }, [eventId, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = e.target as HTMLInputElement
-    const { name, value, type } = target
+    const { name, value, type, checked } = target
 
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? target.checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : name === "nb_places"
+          ? value === "" ? null : Number(value)
+          : value,
     }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const { error } = await supabase.from("events").update(form).eq("id", eventId)
+    const payload: EventForm = {
+      ...form,
+      nb_places: form.nb_places === null ? null : Number(form.nb_places),
+    }
+
+    const { error } = await supabase
+      .from("events")
+      .update(payload)
+      .eq("id", eventId)
 
     if (error) {
       alert("Erreur : " + error.message)
@@ -116,7 +157,7 @@ export default function ModifierEvenementPage() {
         <input
           type="number"
           name="nb_places"
-          value={form.nb_places}
+          value={form.nb_places ?? 0}
           onChange={handleChange}
           className="w-full border border-[#aad7d4] p-2 rounded"
           min={0}

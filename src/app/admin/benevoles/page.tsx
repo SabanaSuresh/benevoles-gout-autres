@@ -17,56 +17,60 @@ export default function ListeBenevolesPage() {
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
+    let mounted = true
+
     const fetchBenevoles = async () => {
-      // 1) Charger les bénévoles
-      const { data: users, error: usersError } = await supabase
-        .from("users")
-        .select("id, prenom, nom, email")
-        .eq("role", "benevole")
-        .order("prenom", { ascending: true })
+      try {
+        // 1) Bénévoles
+        const { data: users, error: usersError } = await supabase
+          .from("users")
+          .select("id, prenom, nom, email")
+          .eq("role", "benevole")
+          .order("prenom", { ascending: true })
 
-      if (usersError) {
-        console.error("Erreur chargement bénévoles :", usersError.message)
-        setLoadingData(false)
-        return
+        if (usersError) {
+          console.error("Erreur chargement bénévoles :", usersError.message)
+          return
+        }
+
+        // 2) Inscriptions + events liés (les events supprimés/absents renverront null)
+        const { data: inscriptions, error: inscError } = await supabase
+          .from("inscriptions")
+          .select("user_id, events(heure_debut, heure_fin)")
+
+        if (inscError) {
+          console.error("Erreur chargement inscriptions :", inscError.message)
+          return
+        }
+
+        // 3) Calcul des heures
+        const heuresParBenevole: Record<string, number> = {}
+        ;(inscriptions || []).forEach((i) => {
+          const ev = Array.isArray(i.events) ? i.events[0] : i.events
+          if (!ev || !ev.heure_debut || !ev.heure_fin) return
+
+          const [h1, m1] = ev.heure_debut.split(":").map((n: string) => Number(n || 0))
+          const [h2, m2] = ev.heure_fin.split(":").map((n: string) => Number(n || 0))
+          const duree = Math.max(0, (h2 * 60 + m2 - (h1 * 60 + m1)) / 60)
+
+          heuresParBenevole[i.user_id] = (heuresParBenevole[i.user_id] || 0) + duree
+        })
+
+        const formatted: Benevole[] = (users || []).map((u) => ({
+          ...u,
+          heures: Number((heuresParBenevole[u.id] || 0).toFixed(2)),
+        }))
+
+        if (mounted) setBenevoles(formatted)
+      } finally {
+        if (mounted) setLoadingData(false)
       }
-
-      // 2) Charger toutes les inscriptions + events liés
-      const { data: inscriptions, error: inscError } = await supabase
-        .from("inscriptions")
-        .select("user_id, events(heure_debut, heure_fin)")
-
-      if (inscError) {
-        console.error("Erreur chargement inscriptions :", inscError.message)
-        setLoadingData(false)
-        return
-      }
-
-      // 3) Calcul des heures pour chaque bénévole
-      const heuresParBenevole: Record<string, number> = {}
-
-      inscriptions?.forEach((i) => {
-        // ⚠️ Correction : gérer le cas array
-        const ev = Array.isArray(i.events) ? i.events[0] : i.events
-        if (!ev) return
-        const [h1, m1] = ev.heure_debut.split(":").map(Number)
-        const [h2, m2] = ev.heure_fin.split(":").map(Number)
-        const duree = (h2 * 60 + m2 - (h1 * 60 + m1)) / 60
-
-        heuresParBenevole[i.user_id] = (heuresParBenevole[i.user_id] || 0) + duree
-      })
-
-      // 4) Fusionner bénévoles + heures
-      const formatted: Benevole[] = (users || []).map((u) => ({
-        ...u,
-        heures: heuresParBenevole[u.id] || 0,
-      }))
-
-      setBenevoles(formatted)
-      setLoadingData(false)
     }
 
     fetchBenevoles()
+    return () => {
+      mounted = false
+    }
   }, [])
 
   if (loading || loadingData) return <div className="p-4">Chargement...</div>
