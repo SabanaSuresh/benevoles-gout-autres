@@ -42,7 +42,8 @@ export default function EvenementsPage() {
       const { data, error } = await supabase
         .from("events")
         .select("*, inscriptions(id, user_id, users(id, email, nom, prenom))")
-        .gte("date", todayLocal) // ✅ masquer les dates passées
+        .gte("date", todayLocal) // ⏳ cacher événements passés
+        .eq("annule", false)     // ❌ cacher événements annulés
         .order("date", { ascending: true })
 
       if (error) {
@@ -57,27 +58,19 @@ export default function EvenementsPage() {
   }, [])
 
   const handleInscription = async (eventId: string) => {
-    if (!user || !user.id) {
+    if (!user?.id) {
       alert("Utilisateur non identifié")
-      console.log("user.id manquant : ", user)
       return
     }
-
     const dejaInscrit = events.find(e => e.id === eventId)
       ?.inscriptions?.some(i => i.users?.id === user.id)
-
     if (dejaInscrit) {
       alert("Vous êtes déjà inscrit à cet événement.")
       return
     }
-
-    const { error } = await supabase
-      .from("inscriptions")
-      .insert({ event_id: eventId, user_id: user.id })
-
-    if (error) {
-      alert("Erreur : " + error.message)
-    } else {
+    const { error } = await supabase.from("inscriptions").insert({ event_id: eventId, user_id: user.id })
+    if (error) alert("Erreur : " + error.message)
+    else {
       alert("Inscription confirmée.")
       router.refresh()
     }
@@ -90,24 +83,15 @@ export default function EvenementsPage() {
       .eq("event_id", eventId)
       .eq("user_id", user?.id)
 
-    if (error) {
-      alert("Erreur : " + error.message)
-    } else {
+    if (error) alert("Erreur : " + error.message)
+    else {
       alert("Désinscription confirmée.")
       router.refresh()
     }
   }
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return ""
-    const d = new Date(dateStr)
-    return d.toLocaleDateString("fr-FR")
-  }
-
-  const formatHeure = (timeStr: string) => {
-    if (!timeStr) return ""
-    return timeStr.slice(0, 5)
-  }
+  const formatDate = (dateStr: string) => (dateStr ? new Date(dateStr).toLocaleDateString("fr-FR") : "")
+  const formatHeure = (timeStr: string) => (timeStr ? timeStr.slice(0, 5) : "")
 
   if (loadingUser || loadingEvents) return <div className="p-4">Chargement...</div>
 
@@ -125,7 +109,9 @@ export default function EvenementsPage() {
           return (
             <div
               key={event.id}
-              className={`border rounded-xl p-4 shadow transition ${event.annule ? "opacity-50 line-through" : ""} ${event.urgence ? "border-[#f1887c] bg-[#fff5f5]" : "border-gray-300 bg-white"}`}
+              className={`border rounded-xl p-4 shadow transition ${
+                event.urgence ? "border-[#f1887c] bg-[#fff5f5]" : "border-gray-300 bg-white"
+              }`}
             >
               <h2 className="text-xl font-semibold text-[#1e5363]">{event.titre}</h2>
               <p className="text-sm text-gray-600">
@@ -138,28 +124,9 @@ export default function EvenementsPage() {
                   : "Places illimitées"}
               </p>
               {event.urgence && <p className="text-[#f1887c] font-bold mt-1">🚨 Urgence</p>}
-              {event.annule && <p className="text-red-500 font-bold mt-1"> Événement annulé</p>}
 
-              {user?.role === "admin" && !event.annule && (
+              {user?.role === "admin" && (
                 <div className="mt-4 flex space-x-2">
-                  <button
-                    onClick={async () => {
-                      const { error } = await supabase
-                        .from("events")
-                        .update({ annule: true })
-                        .eq("id", event.id)
-
-                      if (error) {
-                        alert("Erreur lors de l’annulation : " + error.message)
-                      } else {
-                        alert("Événement annulé.")
-                        router.refresh()
-                      }
-                    }}
-                    className="bg-[#f1887c] hover:bg-[#f9bd9b] text-white font-semibold px-5 py-2 rounded-xl"
-                  >
-                    Annuler
-                  </button>
                   <button
                     onClick={() => router.push(`/admin/modifier/${event.id}`)}
                     className="bg-[#3e878e] hover:bg-[#aad7d4] text-white px-4 py-1 rounded"
@@ -169,7 +136,7 @@ export default function EvenementsPage() {
                 </div>
               )}
 
-              {user?.role === "benevole" && !event.annule && (
+              {user?.role === "benevole" && (
                 <div className="mt-3">
                   {dejaInscrit ? (
                     <button
@@ -191,7 +158,7 @@ export default function EvenementsPage() {
                 </div>
               )}
 
-              {event.inscriptions && event.inscriptions.length > 0 && (
+              {event.inscriptions?.length > 0 && (
                 <div className="mt-4 text-sm">
                   <p className="font-semibold mb-1">Bénévoles inscrits :</p>
                   <ul className="list-disc list-inside">

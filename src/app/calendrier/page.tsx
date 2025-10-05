@@ -16,11 +16,9 @@ export default function CalendrierPage() {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const todayLocal = new Date().toLocaleDateString("fr-CA")
       const { data, error } = await supabase
         .from("events")
         .select("id, titre, date")
-        .gte("date", todayLocal) // ✅ masquer les dates passées
         .order("date", { ascending: true })
 
       if (!error && data) {

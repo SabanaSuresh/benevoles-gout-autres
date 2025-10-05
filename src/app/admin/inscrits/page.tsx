@@ -83,12 +83,7 @@ export default function ListeInscritsPage() {
     if (!users) {
       return <li className="text-gray-400 italic">Utilisateur inconnu</li>
     }
-
-    return (
-      <li>
-        {users.prenom} {users.nom}
-      </li>
-    )
+    return <li>{users.prenom} {users.nom}</li>
   }
 
   return (

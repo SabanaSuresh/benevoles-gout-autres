@@ -35,15 +35,8 @@ export default function MesInscriptionsPage() {
         return
       }
 
-      // Gérer array/non-array puis filtrer sur la date locale >= aujourd'hui
-      const todayLocal = new Date().toLocaleDateString("fr-CA")
-      const eventsOnly = (data || [])
-        .map((insc) => (Array.isArray(insc.events) ? insc.events[0] : insc.events))
-        .filter(Boolean) as Event[]
-
-      const upcoming = eventsOnly.filter((e) => e.date >= todayLocal)
-
-      setEvents(upcoming)
+      const eventsOnly = (data || []).map((inscription) => inscription.events).flat()
+      setEvents(eventsOnly)
       setLoading(false)
     }
 
@@ -65,16 +58,8 @@ export default function MesInscriptionsPage() {
     }
   }
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return ""
-    const d = new Date(dateStr)
-    return d.toLocaleDateString("fr-FR")
-  }
-
-  const formatHeure = (timeStr: string) => {
-    if (!timeStr) return ""
-    return timeStr.slice(0, 5)
-  }
+  const formatDate = (dateStr: string) => (dateStr ? new Date(dateStr).toLocaleDateString("fr-FR") : "")
+  const formatHeure = (timeStr: string) => (timeStr ? timeStr.slice(0, 5) : "")
 
   if (!user || user.role !== "benevole") {
     return <div className="p-4 text-red-600">Page réservée aux bénévoles.</div>
@@ -89,7 +74,7 @@ export default function MesInscriptionsPage() {
       </h1>
 
       {events.length === 0 ? (
-        <p className="text-gray-600">Tu n’es inscrit à aucun événement à venir.</p>
+        <p className="text-gray-600">Tu n’es inscrit à aucun événement pour le moment.</p>
       ) : (
         <div className="space-y-4">
           {events.map((event) => (
@@ -103,8 +88,12 @@ export default function MesInscriptionsPage() {
               </p>
               <p className="mt-2 text-gray-800">{event.description}</p>
 
-              {event.urgence && <p className="text-red-600 font-bold mt-2">🚨 Urgence</p>}
-              {event.annule && <p className="text-red-500 font-bold mt-2">❌ Événement annulé</p>}
+              {event.urgence && (
+                <p className="text-red-600 font-bold mt-2">🚨 Urgence</p>
+              )}
+              {event.annule && (
+                <p className="text-red-500 font-bold mt-2">❌ Événement annulé</p>
+              )}
 
               <button
                 onClick={() => handleDesinscription(event.id)}
