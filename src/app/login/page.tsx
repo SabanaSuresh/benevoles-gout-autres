@@ -22,6 +22,9 @@ export default function LoginPage() {
     router.push("/evenements")
   }
 
+  // Hauteur cible (en px) — forcée via style inline pour passer avant n'importe quel CSS global
+  const FIELD_HEIGHT = 64
+
   return (
     <main className="min-h-screen bg-[--color-bg] flex flex-col items-center pt-16 px-6">
       <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-xl">
@@ -29,8 +32,8 @@ export default function LoginPage() {
           Connexion
         </h1>
 
-        {/* ✅ Champs plus HAUTS (h-14) et police plus grande (text-xl) */}
         <form onSubmit={handleLogin} autoComplete="on" className="space-y-8 w-full">
+          {/* Email */}
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-sm font-medium">Email</label>
             <input
@@ -38,7 +41,8 @@ export default function LoginPage() {
               name="email"
               type="email"
               placeholder="nom@domaine.fr"
-              className="w-full h-14 text-xl border border-gray-300 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+              className="w-full text-2xl rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#aad7d4] px-5"
+              style={{ height: FIELD_HEIGHT, lineHeight: `${FIELD_HEIGHT - 24}px` }}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -49,6 +53,7 @@ export default function LoginPage() {
             />
           </div>
 
+          {/* Mot de passe */}
           <div className="flex flex-col gap-2">
             <label htmlFor="password" className="text-sm font-medium">Mot de passe</label>
             <div className="relative">
@@ -57,7 +62,8 @@ export default function LoginPage() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Mot de passe"
-                className="w-full h-14 text-xl border border-gray-300 px-5 pr-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aad7d4]"
+                className="w-full text-2xl rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#aad7d4] pr-12 pl-5"
+                style={{ height: FIELD_HEIGHT, lineHeight: `${FIELD_HEIGHT - 24}px` }}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -78,9 +84,11 @@ export default function LoginPage() {
 
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
+          {/* Bouton plus HAUT */}
           <button
             type="submit"
-            className="w-full h-14 text-xl bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold rounded-lg transition"
+            className="w-full text-2xl bg-[#3e878e] hover:bg-[#1e5363] text-white font-semibold rounded-lg transition"
+            style={{ height: FIELD_HEIGHT }}
           >
             Se connecter
           </button>
