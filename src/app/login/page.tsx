@@ -12,8 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState("")
 
   // Taille et hauteur forcées (prioritaires sur tout CSS global)
-  const FIELD_HEIGHT_PX = 50
-  const FIELD_FONT_PX = 22
+  const FIELD_HEIGHT_PX = 45
+  const FIELD_FONT_PX = 18
   const BUTTON_FONT_PX = 22
 
   const handleLogin = async (e: React.FormEvent) => {
