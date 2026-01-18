@@ -6,8 +6,21 @@ export default function LogoutButton() {
   const router = useRouter()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
+    try {
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.error("Erreur signOut:", e)
+    } finally {
+      // ✅ purge cache ancien et nouveau (au cas où)
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("user_info_v1")
+          localStorage.removeItem("user_info_v2")
+        } catch {}
+      }
+      router.replace("/login")
+      router.refresh()
+    }
   }
 
   return (

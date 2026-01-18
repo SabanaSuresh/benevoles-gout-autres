@@ -12,13 +12,34 @@ export type UserInfo = {
   nom: string
 }
 
-const STORAGE_KEY = 'user_info_v1'
+/**
+ * ✅ On stocke un cache avec timestamp pour éviter le "cache fantôme" (admin affiché partout)
+ * et éviter le blocage "Chargement..." si le cache est incohérent.
+ */
+type CachedUser = {
+  ts: number
+  user: UserInfo
+}
+
+const STORAGE_KEY = 'user_info_v2'
+const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24h
 
 function readCache(): UserInfo | null {
   try {
-    const raw = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY) : null
+    if (typeof window === 'undefined') return null
+    const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as UserInfo
+
+    const parsed = JSON.parse(raw) as CachedUser
+    if (!parsed?.user || typeof parsed.ts !== 'number') return null
+
+    // ✅ Expiration du cache
+    if (Date.now() - parsed.ts > CACHE_MAX_AGE_MS) {
+      window.localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
+
+    return parsed.user
   } catch {
     return null
   }
@@ -27,10 +48,14 @@ function readCache(): UserInfo | null {
 function writeCache(user: UserInfo | null) {
   try {
     if (typeof window === 'undefined') return
-    if (user) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    else window.localStorage.removeItem(STORAGE_KEY)
+    if (user) {
+      const payload: CachedUser = { ts: Date.now(), user }
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+    } else {
+      window.localStorage.removeItem(STORAGE_KEY)
+    }
   } catch {
-    // ignorer erreurs de stockage (mode privé, quota, etc.)
+    // ignore
   }
 }
 
@@ -92,6 +117,7 @@ async function fetchUserInfoFromDB(
 }
 
 export function useUser() {
+  // ✅ on peut afficher vite le cache, mais on revalide avec Supabase juste après
   const [user, setUser] = useState<UserInfo | null>(() => readCache())
   const [loading, setLoading] = useState<boolean>(true)
   const mountedRef = useRef<boolean>(false)
@@ -101,41 +127,22 @@ export function useUser() {
 
     const hydrateFromSession = async () => {
       try {
-        // 1) Session actuelle (Supabase restaure depuis localStorage si persistSession=true)
-        const { data: sessionData } = await supabase.auth.getSession()
-        let session = sessionData.session
+        // ✅ La vérité vient de Supabase : si pas de session => on purge le cache !
+        const { data, error } = await supabase.auth.getSession()
+        if (error) console.warn('getSession error:', error.message)
 
-        // Fallback si nécessaire
-        if (!session) {
-          const { data: userData } = await supabase.auth.getUser()
-          if (userData?.user) {
-            session = {
-              access_token: '',
-              token_type: 'bearer',
-              user: userData.user,
-              expires_in: 0,
-              expires_at: 0,
-              refresh_token: '',
-              provider_token: null,
-              provider_refresh_token: null,
-            }
-          }
-        }
-
-        if (!session?.user) {
-          if (!mountedRef.current) return
-          setUser((prev) => {
-            if (prev !== null) writeCache(null)
-            return null
-          })
-          setLoading(false)
+        const sessionUser = data?.session?.user
+        if (!sessionUser) {
+          writeCache(null)
+          if (mountedRef.current) setUser(null)
           return
         }
 
-        const authUser = session.user
-        const uid = authUser.id
-        const email = authUser.email ?? ''
-        const info = await fetchUserInfoFromDB(uid, email, authUser.user_metadata)
+        const info = await fetchUserInfoFromDB(
+          sessionUser.id,
+          sessionUser.email ?? '',
+          sessionUser.user_metadata
+        )
 
         if (!mountedRef.current) return
         if (info) {
@@ -147,40 +154,33 @@ export function useUser() {
         }
       } catch (e) {
         console.error('hydrateFromSession exception :', e)
-        if (mountedRef.current) {
-          setUser(null)
-          writeCache(null)
-        }
+        writeCache(null)
+        if (mountedRef.current) setUser(null)
       } finally {
         if (mountedRef.current) setLoading(false)
       }
     }
 
-    // Affichage immédiat si cache présent, sinon spinner le temps d’hydrater
+    // Affiche vite le cache, mais garde loading=true tant que Supabase n'a pas validé
     const cached = readCache()
-    if (!cached) {
-      setLoading(true)
-    } else {
-      setUser(cached)
-      setLoading(false)
-    }
+    if (cached) setUser(cached)
+    setLoading(true)
 
     hydrateFromSession()
 
-    // 2) Suivre les changements d’auth (login / logout / refresh)
+    // ✅ écouter login/logout/refresh
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       try {
         if (!mountedRef.current) return
 
-        if (!newSession?.user) {
-          setUser(null)
+        const u = newSession?.user
+        if (!u) {
           writeCache(null)
+          setUser(null)
           return
         }
 
-        const u = newSession.user
         const info = await fetchUserInfoFromDB(u.id, u.email ?? '', u.user_metadata)
-
         if (info) {
           setUser(info)
           writeCache(info)
@@ -190,10 +190,9 @@ export function useUser() {
         }
       } catch (e) {
         console.error('onAuthStateChange exception :', e)
-        setUser(null)
         writeCache(null)
+        setUser(null)
       } finally {
-        // ✅ évite de rester bloqué sur "Chargement…" après un changement d’état
         setLoading(false)
       }
     })
